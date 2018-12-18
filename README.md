@@ -17,6 +17,7 @@ eval $(docker-machine env)
 ```
 
 Setup port forwarding rule for VM -> docker engine(inside VM)
+
 `VBoxManage modifyvm default --natpf1 "pf1,tcp,,8000,,8000"`
 
 Start docker machine
@@ -34,12 +35,16 @@ docker-compose up
 #### Accessing django server
 
 First, find local ip address for VirtualBox machine(Docker Machine)
+
 `docker-machine ls`
+
 or
+
 `docker-machine ip default`
 
 In local environment, access the server through the ip address & port
 ex)
+
 `http://192.168.99.100:8000'
 
 #### Setup local port forwarding rule for external access
