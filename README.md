@@ -47,6 +47,6 @@ ex)
 
 `http://192.168.99.100:8000'
 
-#### Setup local port forwarding rule for external access
+-> this is available in LAN environment too.
 
-//TODO
+
