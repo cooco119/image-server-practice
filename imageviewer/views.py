@@ -23,5 +23,3 @@ def click_handler():
     '''
     when clicks, magnify image in new, upper layer
     '''
-
-def 

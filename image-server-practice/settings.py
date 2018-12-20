@@ -22,8 +22,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '%jb+jocix$xuk1_5@ekure3g!!f7ao@yc&mcb7h5ip)_8ob@28'
 
-# # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -37,9 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'imageviewer.apps.ImageviewerConfig',                        
-    'imageuploader.apps.ImageuploaderConfig',     
-    'index.apps.IndexConfig',                
+    'imageviewer',                        
+    'imageuploader',     
+    'frontend', 
+    'home', 
+    'models',              
 ]
 
 MIDDLEWARE = [

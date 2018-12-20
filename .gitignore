@@ -1,1 +1,5 @@
 image-server-practice/__pycache__/*
+*/migrations/*
+.vscode/*
+*/__pycache__/*
+*/*.pyc
