@@ -21,4 +21,5 @@ urlpatterns = [
     path('imageviewer/', include('imageviewer.urls')),
     path('admin/', admin.site.urls),
     path('imageuploader/', include('imageuploader.urls')),
+    path('home/', include('home.urls')),
 ]
