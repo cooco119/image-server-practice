@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '%jb+jocix$xuk1_5@ekure3g!!f7ao@yc&mcb7h5ip)_8ob@28'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -83,7 +83,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'practicedb',
         'USER': 'postgres',
-        'HOST': '192.168.99.100',
+        # 'HOST': 'db',
+        # 'HOST': '192.168.99.100',
+        'HOST': '127.0.0.1',
         'PORT': 5432,
     }
 }
