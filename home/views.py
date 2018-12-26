@@ -16,28 +16,36 @@ class SignInHandler(APIView):
     def post(self, request, format=None):
         serializer = UsersSerializer(data=request.data)
         if serializer.is_valid():
-            data = request.data.dict()
+            data = request.data
             name = data.get("name")
             users = Users.objects.all()
             if users.filter(name=name).exists():
                 m_status = status.HTTP_200_OK
+                msg = "Success"
                 data = {
-                    "status": m_status
+                    "status": m_status,
+                    "msg": msg
                 }
             elif not (type(name) is str):
                 m_status = status.HTTP_400_BAD_REQUEST
+                msg = "name is not string"
                 data = {
-                    "status": m_status
+                    "status": m_status,
+                    "msg": msg
                 }
             else:
                 m_status = status.HTTP_404_NOT_FOUND
+                msg = "No matching name"
                 data = {
-                    "status": m_status
+                    "status": m_status,
+                    "msg": msg
                 }
         else:
             m_status = status.HTTP_400_BAD_REQUEST
+            msg = "Serializer failed"
             data = {
-                "status": m_status
+                "status": m_status,
+                "msg": msg
             }
         return Response(data=json.dumps(data), status=m_status, content_type='application/json')
 
@@ -61,26 +69,32 @@ class RegistrationHandler(APIView):
 
     def post(self, request, format=None):
         serializer = UsersSerializer(data=request.data)
-        data = request.data.dict()
+        data = request.data
         name = data.get("name")
         users = Users.objects.all()
         if serializer.is_valid():
             if users.filter(name=name).exists():
                m_status = status.HTTP_409_CONFLICT
+               msg = "User already exists!"
                data = {
-                   "status": m_status
+                   "status": m_status,
+                   "msg": msg
                }
                return Response(data=json.dumps(data), status=m_status)
             else:
-                serializer.save()
+                u = serializer.save()
                 m_status = status.HTTP_201_CREATED
+                msg = "Success"
                 data = {
-                    "status": m_status
+                    "status": m_status,
+                    "msg": msg
                 }
                 return Response(data=json.dumps(data), status=status.HTTP_201_CREATED)
         m_status = status.HTTP_400_BAD_REQUEST
+        msg = "Serializer Failed"
         data = {
-            "status": m_status
+            "status": m_status,
+            "msg": msg
         }
         return Response(data=json.dumps(data), status=m_status)
 
