@@ -11,7 +11,7 @@ class Users(models.Model):
 
 class Image(models.Model):
     image_name = models.CharField(max_length=100)
-    image_oid = models.IntegerField(default=0)
+    image_oid = models.CharField(max_length=500)
     user = models.ForeignKey(Users,on_delete=models.SET_NULL, related_name="Users", null=True)
     is_private = models.BooleanField(default=False)
 
