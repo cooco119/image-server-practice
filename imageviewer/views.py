@@ -26,7 +26,7 @@ class GetWorkspaces(APIView):
                 "names": names,
                 "msg": msg
             }
-        return Response(data=json.dumps(data), status=status.HTTP_200_OK, \
+        return Response(data=json.dumps(data), status=m_status, \
                         content_type='application/json')
 
 class GetImageListByName(APIView):

@@ -3,3 +3,5 @@ image-server-practice/__pycache__/*
 .vscode/*
 */__pycache__/*
 */*.pyc
+node_modules/**/*
+node_moduels/*
