@@ -5,7 +5,7 @@ import Paper from '@material-ui/core/Paper';
 let GridElement = function statelessFunctionComponenetClass(props){
   return (
       <Grid item xs={3}>
-        <button key={props.key} style={{padding: 10, textAlign: 'center'}} onClick={(event)=>props.handler(event)}>{props.name}</button>
+        <button key={props.key} style={{padding: 10, textAlign: 'center'}} onClick={(event)=>props.handler(props.name)}>{props.name}</button>
       </Grid>
   )
 }

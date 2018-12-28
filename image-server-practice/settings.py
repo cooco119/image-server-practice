@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+# import logging.config
+
+# logging.config.fileConfig('../logging.conf')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -145,3 +148,31 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:3000/',
 )
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': True,
+#     'formatters': {
+#         'verbose': {
+#             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+#         },
+#     },
+#     'handlers': {
+#         'console': {
+#             'level': 'NOTSET',
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'verbose'
+#         }
+#     },
+#     'loggers': {
+#         '': {
+#             'handlers': ['console'],
+#             'level': 'NOTSET',
+#         },
+#         'django.request': {
+#             'handlers': ['console'],
+#             'propagate': False,
+#             'level': 'ERROR'
+#         }
+#     }
+# }
