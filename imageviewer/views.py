@@ -36,16 +36,26 @@ class GetImageListByName(APIView):
 
     def get(self, request, username, targetname, format=None):
         if (Users.objects.all().filter(name=username).exists()):
+            # print('p1')
             if (Users.objects.all().filter(name=targetname).exists()):
+                # print('p2')
                 m_status = status.HTTP_200_OK
                 if (username == targetname):
-                    image_list = Image.objects.all().filter(user__name=targetname).values('image_name', 'preview_url', 'user__name', 'is_private', 'pub_date')
+                    # print('p3')
+                    image_list = Image.objects.all().filter(user__name=targetname).values('image_name', 'image_oid__bucket_name', 'preview_url', 'user__name', 'is_private', 'pub_date')
                     image_list = list(image_list)
+                    for i in range(len(image_list)):
+                        image_list[i]['pub_date'] = str(image_list[i].get('pub_date'))
+                    print(targetname)
+                    print(image_list)
                     msg = "Success"
 
                 else:
-                    image_list = Image.objects.all().filter(user__name=targetname).filter(is_private=False).values('image_name', 'preview_url', 'user__name', 'is_private', 'pub_date')
+                    image_list = Image.objects.all().filter(user__name=targetname).filter(is_private=False).values('image_name', 'image_oid__bucket_name', 'preview_url', 'user__name', 'is_private', 'pub_date')
                     image_list = list(image_list)
+                    for i in range(len(image_list)):
+                        # print(image_list[i])
+                        image_list[i]['pub_date'] = str(image_list[i].get('pub_date'))
                     msg = "Success"
             else:
                 m_status = status.HTTP_404_NOT_FOUND
@@ -92,3 +102,13 @@ class GetImageByImageName(APIView):
             m_status = status.HTTP_404_NOT_FOUND
             img = None
         
+class GetPresignedImageGetUrl(APIView):
+    renderer_classes = (JSONRenderer, )
+
+    def get(self, request, bucketName, objectName, format=None):
+
+        if (oid.objects.all().filter(bucket_name=bucketName).filter(object_name=objectName).exists()):
+            minioClient = Minio('127.0.0.1:9000',
+                            access_key='FM9GO6CT17O8122165HB',
+                            secret_key='yLyai1DFC03hzN17srK0PvYTIZFvHDnDxRKYAjK4',
+                            secure=False)

@@ -32,6 +32,7 @@ class App extends Component {
       bucketName: '',
       priavacy: false,
       etags: [],
+      enabledImageList: false,
     }
     this.handleSigninChange = this.handleSigninChange.bind(this);
     this.handleSigninSubmit = this.handleSigninSubmit.bind(this);
@@ -257,8 +258,8 @@ class App extends Component {
     }
   }
 
-  async getImageServerInfo(){
-    let url = `/imageuploader/upload?bucket=${this.state.bucketName}&object=${this.state.imageName}`;
+  async getImageServerInfo(bucketName, imageName){
+    let url = `/imageuploader/upload/${bucketName}/${imageName}`;
     return await axios.get(url).then( res =>{
       let responseData = JSON.parse(res.data);
       if (res.status === 200){
@@ -280,20 +281,7 @@ class App extends Component {
       alert('Select files first!');
       return;
     }
-    
-    let imageServerInfo = await this.getImageServerInfo();
 
-    let url = imageServerInfo.url;
-    let acKey = imageServerInfo.keys.accessKey;
-    let scKey = imageServerInfo.keys.secretKey;
-    
-    let minioClient = new Minio.Client({
-      endPoint: '127.0.0.1',
-      port: 9000,
-      useSSL: false,
-      accessKey: acKey,
-      secretKey: scKey
-    })
     for (var i= 0; i < files.length; i++){
       let reader = new FileReader();
       let filestring;
@@ -304,69 +292,90 @@ class App extends Component {
       reader.onabort = (e) => {
         alert('Upload cancled')
       }
-      // reader.onload = (e) => {
-      //   return filestring = e.target.result;
-      // }
       let f = files[i];
       if (!f.type.match('image.*')){
         alert('File should be images only.')
         return;
       }
-      reader.readAsBinaryString(f);
       console.log(filestring);
       let filestream = fileReaderStrem(f);
       console.log(filestream);
       let bucketName = this.state.bucketName;
       let imageName = f.name;
-      minioClient.bucketExists(bucketName, function(err, exists) {
-        if (err){
-          minioClient.makeBucket(bucketName, 'ap-southeast-1', function(err){
-            if (err) {
-              return alert(err)
-            }
-            else{
-              console.log('Bucket created successfully in "ap-southeast-1".')
-            }
-          })
-        }
-        if (exists){
-          return console.log('Bucket already exists')
-        }
-      })
+      let imageServerInfo = await this.getImageServerInfo(bucketName, imageName);
+      let url = imageServerInfo.url;
+      let msg = imageServerInfo.msg;
+      reader.onload = (e) => {
+        axios.put(url,{"file": e.target.result})
+        .then((res) => {
+          console.log(res)
+          if (res.status !== 200){
+            console.error('image put failed')
+            return;
+          }
+          else{
+            console.log('image #' + i.toString() + ' upload successful')
+          }
+        })
+      }
+      reader.readAsBinaryString(f);
       
-      minioClient.putObject(bucketName, imageName, filestream, function(err, etag){
-        if (err !== null){
-          let m_etags = this.state.etags;
-          m_etags.push(etag);
-          console.log('File #'+string(i)+' is uploaded successfully');
-          this.setState({etags: m_etags});
-          
-          return;
-        }
-        console.error(err);
-        alert(err);
-        return;
-      })
-      let appUrl = '/imageuploader/upload';
+      // console.log("Checking if bucket exists")
+      // minioClient.bucketExists(bucketName, function(err, exists) {
+      //   // console.log(err)
+      //   // console.log(exists)
+      //   if (!exists){
+      //     minioClient.makeBucket(bucketName, 'ap-southeast-1', function(err){
+      //       if (err) {
+      //         return alert(err)
+      //       }
+      //       else{
+      //         console.log('Bucket created successfully in "ap-southeast-1".')
+      //       }
+      //     })
+      //   }
+      //   if (exists){
+      //     return console.log('Bucket already exists')
+      //   }
+      //   if (err){
+      //     console.log("Error occured checking bucket exists")
+      //   }
+      // })
+      
+      // minioClient.putObject(bucketName, imageName, filestream, (err, etag ) => {
+      //   let etags = this.state.etags;
+      //   let m_etag;
+      //   m_etag = getEtag;
+      //   etags.push(m_etag);
+      //   this.setState({etags: etags})
+      // })
+      let appUrl = '/imageuploader/upload/';
+      let d = new Date();
+      d = new Date(d.getTime() - 3000000);
       let data = {
         "image_name": imageName,
         "image_format": imageName.split('.')[1],
         "image_data": {
           "bucketName": bucketName,
-          "objectName": this.state.etags
+          "objectName": imageName
         },
         "user": this.state.loginvalue,
         "is_private": this.state.priavacy,
-        "pub_date": new Date().toLocaleString()
+        "pub_date": d.getFullYear().toString()+"-"+((d.getMonth()+1).toString().length===2?(d.getMonth()+1).toString():"0"+(d.getMonth()+1).toString())+"-"+(d.getDate().toString().length===2?d.getDate().toString():"0"+d.getDate().toString())+" "+(d.getHours().toString().length===2?d.getHours().toString():"0"+d.getHours().toString())+":"+((parseInt(d.getMinutes()/5)*5).toString().length===2?(parseInt(d.getMinutes()/5)*5).toString():"0"+(parseInt(d.getMinutes()/5)*5).toString())+":00"
       }
       await axios.post(appUrl, JSON.stringify(data), {headers: {"content-type": "application/json"}})
       .then( res => {
-        if (res.status === 200){
-          alert('image uploaded successfully');
+        console.log(res.status)
+        if (res.status === 201){
+          console.log('image #' + i.toString() + ' uploaded successfully to db');
+          return;
+        }
+        else if(res.status === 409){
+          console.log('image #' + i.toString() + ' already exists in db');
           return;
         }
         else{
-          alert('image upload failed with error messeage of : ' + `\n${JSON.parse(res.data).msg}`);
+          console.log('image #' + i.toString() + ' upload failed with error messeage of : ' + `\n${JSON.parse(res.data).msg}`);
           return;
         }
       })
@@ -374,6 +383,9 @@ class App extends Component {
   }
 
   getImageListByName(){
+    if (this.state.enabledImageList){
+
+    }
     
   }
 

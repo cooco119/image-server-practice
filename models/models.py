@@ -21,8 +21,8 @@ class Image(models.Model):
     image_oid = models.ForeignKey(oid, on_delete=models.CASCADE)
     preview_url = models.CharField(max_length=100, null=True)
     user = models.ForeignKey(Users,on_delete=models.SET_NULL, related_name="Users", null=True)
-    is_private = models.BooleanField(default=False)
-    pub_date = models.DateField(null=True)
+    is_private = models.BooleanField(default=False, null=True)
+    pub_date = models.DateTimeField(null=True)
 
     # objects = models.Manager()
 
