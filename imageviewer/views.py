@@ -1,5 +1,6 @@
 from models.models import Users
 from models.models import Image
+from models.models import oid
 from models.serializers import UsersSerializer
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
@@ -8,6 +9,11 @@ from rest_framework import status
 from rest_framework.serializers import Serializer
 import json
 import logging
+
+from minio import Minio
+from minio.error import (ResponseError, BucketAlreadyOwnedByYou,
+                         BucketAlreadyExists)
+import datetime
 
 class GetWorkspaces(APIView):
     renderer_classes = (JSONRenderer, )
@@ -108,7 +114,21 @@ class GetPresignedImageGetUrl(APIView):
     def get(self, request, bucketName, objectName, format=None):
 
         if (oid.objects.all().filter(bucket_name=bucketName).filter(object_name=objectName).exists()):
-            minioClient = Minio('127.0.0.1:9000',
+            minioClient = Minio('192.168.101.198:9000',
                             access_key='FM9GO6CT17O8122165HB',
                             secret_key='yLyai1DFC03hzN17srK0PvYTIZFvHDnDxRKYAjK4',
                             secure=False)
+            try:
+                url = minioClient.presigned_get_object(bucketName, objectName,expires=datetime.timedelta(minutes=1))
+                msg = "Success"
+                m_status = status.HTTP_200_OK
+            except ResponseError as err:
+                msg = err
+                url = None
+                m_status = status.HTTP_403_FORBIDDEN
+            data = {
+                "status": m_status,
+                "url": url,
+                "msg":msg
+            }
+            return Response(data=json.dumps(data), status=m_status, content_type='application/json')

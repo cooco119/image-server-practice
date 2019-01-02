@@ -7,3 +7,4 @@ paramiko==2.4.2
 uwsgi>=2.0
 Pillow==5.3.0
 minio==4.0.8
+django-cors-headers==2.4.0

@@ -89,12 +89,12 @@ WSGI_APPLICATION = 'image-server-practice.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'practicedb',
+        'NAME': 'postgres',
         'USER': 'postgres',
         # 'HOST': 'db',
-        # 'HOST': '192.168.99.100',
+        'HOST': '192.168.101.198',
         # 'HOST': '127.0.0.1',
-        'HOST': '0.0.0.0',
+        # 'HOST': '0.0.0.0',
         'PORT': 5432,
     }
 }
@@ -139,8 +139,10 @@ USE_TZ = True
 # STATIC_ROOT = os.path.join(FRONTEND_DIR, 'build', 'static')
 STATIC_URL = '/static/'
 
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 STATICFILES_DIRS = (
-    os.path.join(os.path.join(BASE_DIR, 'frontend'), 'build', 'static'),
+    os.path.join(BASE_DIR, 'static'),
 )
 
 CORS_ORIGIN_ALLOW_ALL = True

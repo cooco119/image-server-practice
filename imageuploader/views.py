@@ -23,7 +23,7 @@ class UploadeHandler(APIView):
         # in future, these keys should be created for user specifically
         # and users should register the service
 
-        minioClient = Minio('127.0.0.1:9000',
+        minioClient = Minio('192.168.101.198:9000',
                             access_key='FM9GO6CT17O8122165HB',
                             secret_key='yLyai1DFC03hzN17srK0PvYTIZFvHDnDxRKYAjK4',
                             secure=False)
@@ -130,7 +130,7 @@ class UploadeHandler(APIView):
                             status=m_status,
                             content_type='application/json')
             else:
-                m_oid = oid(url='127.0.0.1', bucket_name=bucket_name, object_name=object_name)
+                m_oid = oid(url='192.168.101.198:9000', bucket_name=bucket_name, object_name=object_name)
                 m_oid.save()
             # print(pub_date)
             

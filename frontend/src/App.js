@@ -8,6 +8,7 @@ import GridElement from './MakeGridElement.jsx';
 import * as Minio from 'minio';
 import { string, func } from 'prop-types';
 import * as fileReaderStrem from 'filereader-stream';
+import OpenSeadragon from 'openseadragon';
 
 class App extends Component {
   constructor(props){
@@ -33,6 +34,7 @@ class App extends Component {
       priavacy: false,
       etags: [],
       enabledImageList: false,
+      imageUrl: null,
     }
     this.handleSigninChange = this.handleSigninChange.bind(this);
     this.handleSigninSubmit = this.handleSigninSubmit.bind(this);
@@ -43,6 +45,11 @@ class App extends Component {
     this.unloadUploader = this.unloadUploader.bind(this);
     this.logOut = this.logOut.bind(this);
     this.upload = this.upload.bind(this);
+    this.getImageListByName = this.getImageListByName.bind(this);
+    this.setImagesChildOfTableRow = this.setImagesChildOfTableRow.bind(this);
+    this.getImageUrl = this.getImageUrl.bind(this);
+    this.popupViewer = this.popupViewer.bind(this);
+    // this.openSeaDragonViewer = this.openSeaDragonViewer.bind(this);
   }
 
   componentWillMount(){
@@ -115,6 +122,7 @@ class App extends Component {
       }
       console.log(this.state.imageList);
       this.setState({selectedName: name});
+      this.setState({enabledImageList: true})
     })
   }
 
@@ -231,6 +239,95 @@ class App extends Component {
       } 
     }
   }
+  async popupViewer(bucketName, imageName){
+    let url = await this.getImageUrl(bucketName, imageName);
+    if (url !== null){
+      let viewerWindow = window.open("", 'viewer', 'toolbar=0,status=0,width=1280px,height=960px');
+      let res = await axios.get(url);
+      res = res.data;
+      let public_url = process.env.PUBLIC_URL;
+      viewerWindow.document.write('<div id="openseadragon1" style="width: 1280px; height: 960px;"></div>\n<script src="'+public_url+'/openseadragon.min.js"></script>\n<script>var viewer = OpenSeadragon({ \
+          element: "openseadragon1", \
+          tileSources: { \
+            type: "image", \
+            url:"'+ res+'" \
+          }, \
+          showNavigator: true, \
+        })</script>');
+    } 
+    else {
+      alert("Error fetching image url");
+    }
+  }
+  // openSeaDragonViewer(url){
+  //   let viewer = OpenSeadragon({
+  //     id: "openseadragon1",
+  //     tileSources: {
+  //       type: "image",
+  //       url: res
+  //     },
+  //     showNavigator: true,
+  //   })
+  //   return;
+  // }
+
+  async getImageUrl(bucketName, imageName){
+    let url = `/imageviewer/images/${bucketName}/${imageName}`;
+    console.log("hello");
+    return await axios.get(url)
+    .then( async res => {
+      let responseData = JSON.parse(res.data);
+      if (res.status === 200){
+        let url = responseData.url;
+        // console.log(url);
+        // this.setState({imageUrl: url});
+        return url;
+      }
+      else{
+        alert('fetching get image url failed')
+        return;
+      }
+    })
+  }
+
+  getImageListByName(imageList){
+    if (this.state.enabledImageList){
+      let listRowElems = [];
+      for (var i = 0; i < imageList.length; i++){
+        let curImage = imageList[i];
+        let t;
+        let id = <td><label>{i.toString()}</label></td>;
+        let bucketName = <td><label>{curImage.image_oid__bucket_name}</label></td>;
+        let imageName = <td><label onClick={() => this.popupViewer(curImage.image_oid__bucket_name, curImage.image_name)}>{curImage.image_name}</label></td>;
+        let user = <td><label>{curImage.user__name}</label></td>;
+        let publicity = <td><label>Public</label></td>;
+        if (curImage.is_private){
+          publicity = <td><label>Private</label></td>;
+        }
+        let date = <td><label>{curImage.pub_date}</label></td>;
+        let listRow = [id, bucketName, imageName, user, publicity, date]
+        listRowElems.push(<tr>{listRow}</tr>);
+      }
+      // console.log(listRowElems);
+      // console.log(<tr>test</tr>)
+      return (
+        <tbody>{listRowElems}</tbody>
+      )
+    }
+  }
+
+  setImagesChildOfTableRow(listRow, rowNum){
+    let m_tr = document.createElement('tr');
+    let att = document.createAttribute('id');
+    att.value = rowNum.toString();
+    m_tr.setAttributeNode(att);
+
+    for (var i = 0; i <listRow.length; i++){
+      m_tr.appendChild(listRow[i]);
+    }
+    return m_tr;
+  }
+
   createGridElement = function(nameKV) {
       return <GridElement name={nameKV.name} user={nameKV.user} handler={nameKV.handler}/>;
   }
@@ -305,8 +402,24 @@ class App extends Component {
       let imageServerInfo = await this.getImageServerInfo(bucketName, imageName);
       let url = imageServerInfo.url;
       let msg = imageServerInfo.msg;
-      reader.onload = (e) => {
-        axios.put(url,{"file": e.target.result})
+
+      // const formData = new FormData();
+      // formData.append(imageName, f);
+      // axios.put(url,formData)
+      //   .then((res) => {
+      //     console.log(res)
+      //     if (res.status !== 200){
+      //       console.error('image put failed')
+      //       return;
+      //     }
+      //     else{
+      //       console.log('image #' + i.toString() + ' upload successful')
+      //     }
+      //   })
+
+      reader.onloadend = (e) => {
+        console.log(e);
+        axios.put(url, e.target.result)
         .then((res) => {
           console.log(res)
           if (res.status !== 200){
@@ -318,7 +431,7 @@ class App extends Component {
           }
         })
       }
-      reader.readAsBinaryString(f);
+      reader.readAsDataURL(f);
       
       // console.log("Checking if bucket exists")
       // minioClient.bucketExists(bucketName, function(err, exists) {
@@ -380,13 +493,6 @@ class App extends Component {
         }
       })
     }
-  }
-
-  getImageListByName(){
-    if (this.state.enabledImageList){
-
-    }
-    
   }
 
 
@@ -488,6 +594,19 @@ class App extends Component {
         </div>
         <div>
           <h3>Workspace of {this.state.selectedName}</h3>
+          <div style={{flexDirection: 'row'}}>
+            <table cellPadding="10" cellSpacing="10">
+              <tr>
+                <th>Id</th>
+                <th>Bucket Name</th>
+                <th>Image Name</th>
+                <th>Uploader</th>
+                <th>Publicity</th>
+                <th>Date Time</th>
+              </tr>
+              {this.getImageListByName(this.state.imageList)}
+            </table>
+          </div>
         </div>
         <div style={{height: 200}}></div>
         <hr></hr>
