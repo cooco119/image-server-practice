@@ -32,7 +32,7 @@ class UploadeHandler(APIView):
         try:
             if minioClient.bucket_exists(bucketName):
                 try:
-                    url = minioClient.presigned_put_object(bucketName, objectName, expires=datetime.timedelta(seconds=20))
+                    url = minioClient.presigned_put_object(bucketName, objectName, expires=datetime.timedelta(seconds=300))
                     msg = "Successfully generated url"
                     m_status = status.HTTP_200_OK
                 except ResponseError as err:
@@ -45,7 +45,7 @@ class UploadeHandler(APIView):
                     minioClient.make_bucket(bucketName, location='ap-southeast-1')
                     msg = "created bucket \n"
                     try:
-                        url = minioClient.presigned_put_object(bucketName, objectName, expires=datetime.timedelta(seconds=20))
+                        url = minioClient.presigned_put_object(bucketName, objectName, expires=datetime.timedelta(seconds=300))
                         msg += "Successfully generated url"
                         m_status = status.HTTP_200_OK
                     except ResponseError as err:

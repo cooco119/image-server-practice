@@ -2,6 +2,5 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.index),
-    # path('static/frontend/main.js', views.main)
+    path('<path:filepath>', views.fileDispatcher.as_view(), name='fileDispatch'),
 ]

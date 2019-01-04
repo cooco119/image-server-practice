@@ -9,6 +9,7 @@ import * as Minio from 'minio';
 import { string, func } from 'prop-types';
 import * as fileReaderStrem from 'filereader-stream';
 import OpenSeadragon from 'openseadragon';
+import * as path from 'path';
 
 class App extends Component {
   constructor(props){
@@ -240,30 +241,51 @@ class App extends Component {
     }
   }
   async popupViewer(bucketName, imageName){
-    let url = await this.getImageUrl(bucketName, imageName);
-    if (url !== null){
-      let viewerWindow = await window.open("", 'viewer', 'toolbar=0,status=0,width=1280px,height=960px');
-      let res = await axios.get(url);
-      res = res.data;
-      console.log(res);
+    // let url = await this.getImageUrl(bucketName, imageName);
+    // console.log('popupViewer_url: '+url)
+    // if (url !== null){
+      let viewerWindow = await window.open("", 'viewer', 'toolbar=1,status=0,width=1280px,height=960px');
+      // let res = await axios.get(url);
+      // let xml = res.data;
+      // console.log(res);
       let public_url = process.env.PUBLIC_URL;
+      console.log(public_url)
+      // let re = /(?:\.([^.]+))?$/;
+      let dzi_name = imageName.substr(0, imageName.lastIndexOf('.')) + '.dzi';
+      let dzi_path = 'http://192.168.101.198:8000/front' + '/'+ imageName.substr(0, imageName.lastIndexOf('.')) +'/' +  dzi_name;
+      console.log(dzi_path)
+      let dziFilesUrl = dzi_path;
+      // let dziData = xml;
+      let tileSourceFromData = function(data, filesUrl) {
+        let parser = new DOMParser();
+        let xmlDoc = parser.parseFromString(data, "text/xml");
+        console.log(xmlDoc);
+        let image = xmlDoc.getElementsByTagName('Image')[0];
+        let size = xmlDoc.getElementsByTagName('Size')[0];
+
+        let dzi = {
+          Image: {
+            xmlns: image.getAttribute('xmlns'),
+            Url: filesUrl,
+            Format: image.getAttribute('Format'),
+            Overlap: image.getAttribute('Overlap'),
+            TileSize: image.getAttribute('TileSize'),
+            Size: {
+              Height: size.getAttribute('Height'),
+              Width: size.getAttribute('Width')
+            }
+          }
+        }
+        console.log(dzi);
+        return dzi;
+      };
+      //JSON.stringify(tileSourceFromData(dziData, dziFilesUrl))
       viewerWindow.document.write('\
-      <div id="openseadragon1" style="width: 1280px; height: 960px;"></div>\n\
-        <script src="'+public_url+'/openseadragon.min.js"></script>\n\
-        <script>var viewer = OpenSeadragon({ \
-            element: "openseadragon1", \
-            tileSources: { \
-              type: "image", \
-              url:"'+ res+'" \
-            }, \
-            showNavigator: true, \
-          })\
-        </script>\
-      ');
-    } 
-    else {
-      alert("Error fetching image url");
-    }
+      <div id="openseadragon1" style="width: 1280px; height: 960px;"></div>\n<script src="'+public_url+'/openseadragon.js"></script>\n<script>var viewer = OpenSeadragon({ element: "openseadragon1", tileSources: "'+dzi_path+'", showNavigator: true })</script>');
+    // } 
+    // else {
+    //   alert("Error fetching image url");
+    // }
   }
   // openSeaDragonViewer(url){
   //   let viewer = OpenSeadragon({
@@ -279,7 +301,7 @@ class App extends Component {
 
   async getImageUrl(bucketName, imageName){
     let url = `/imageviewer/images/${bucketName}/${imageName}`;
-    console.log("hello");
+    // console.log("hello");
     return await axios.get(url)
     .then( async res => {
       let responseData = JSON.parse(res.data);

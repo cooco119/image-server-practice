@@ -57,7 +57,7 @@ import json
 
 from collections import deque
 
-
+PIL.Image.MAX_IMAGE_PIXELS = 1000000000
 NS_DEEPZOOM = 'http://schemas.microsoft.com/deepzoom/2008'
 
 DEFAULT_RESIZE_FILTER = PIL.Image.ANTIALIAS

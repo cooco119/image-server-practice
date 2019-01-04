@@ -48,7 +48,9 @@ class DeepZoomWrapper(object):
                         access_key='FM9GO6CT17O8122165HB',
                         secret_key='yLyai1DFC03hzN17srK0PvYTIZFvHDnDxRKYAjK4',
                         secure=False)
-    imagePath = os.path.join(os.getcwd(), 'imageuploader', 'image_tmp', 'source', str(datetime.datetime.now()).replace(" ","_")+'.jpg', )
+    dirPath = os.path.join(os.getcwd(), 'imageuploader', 'image_tmp', 'source', os.path.splitext(objectName)[0])
+    os.mkdir(dirPath)
+    imagePath = os.path.join(os.getcwd(), 'imageuploader', 'image_tmp', 'source', os.path.splitext(objectName)[0], objectName )
     imageData = None
     imageFormat = ""
     exists = False
@@ -81,10 +83,10 @@ class DeepZoomWrapper(object):
   def imageTiler(self, imagePath, logger):
     creator = deepzoom.ImageCreator(tile_size=128, tile_overlap=2, tile_format="png",
                                 image_quality=0.8, resize_filter="bicubic")
-    filename = imagePath.split('/')
-    filename = filename[len(filename) -1]
+    filename = os.path.split(imagePath)[1]
     filename = os.path.splitext(filename)[0] + '.dzi'
-    res_path = os.path.join(os.getcwd(), 'imageuploader', 'image_tmp', 'processed', filename)
+    # res_dir = os.path.join(os.getcwd(), 'imageuploader', 'image_tmp', 'processed', os.path.splitext(objectName)[0])
+    res_path = os.path.join(os.getcwd(), 'imageuploader', 'image_tmp', 'processed', os.path.splitext(filename)[0], filename)
     logger.debug("[DeepZoomWrapper] Source path: " + imagePath)
     logger.debug("[DeepZoomWrapper] Result path: " + res_path)
     logger.debug("[DeepZoomWrapper] Entering deepzoom api")
@@ -114,14 +116,27 @@ class DeepZoomWrapper(object):
         file_stat = os.stat(imagePath)
         minioClient.put_object(bucketName, imageName, file_data, file_stat.st_size, content_type='application/dzi')
         file_data.close()
+
+      # logger.debug("[DeepZoomWrapper] Copying to frontend/public/"+imageName+"/*")
+      # shutil.copyfile(imagePath, os.path.join('/home/jaejunlee/Documents/practice/image-server-practice/frontend/public/'+os.path.splitext(imageName)[0]+'/'+imageName))
+      # logger.debug("[DeepZoomWrapper] Successfully copyied to frontend/public/"+imageName+"/*")
+
       logger.debug("[DeepZoomWrapper] Starting upload recursively to minio server, starting from " + dataDirPath)
       self.uploadRecursively(minioClient, dataDirPath, logger, os.path.split(dataDirPath)[0], bucketName, os.path.split(dataDirPath)[1], os.path.splitext(imageName)[0])
       logger.debug("[DeepZoomWrapper] Successfully sent to minio server")
-      logger.debug("[DeepZoomWrapper] Deleting temporary files")
-      os.remove(imagePath)
-      shutil.rmtree(dataDirPath)
-      logger.debug("[DeepZoomWrapper] Successfully deleted temporary files")
 
+      logger.debug("[DeepZoomWrapper] Copying files to frontend/public/")
+      try:
+        shutil.copytree(os.path.split(dataDirPath)[0], '/code/frontend_app/deepzoom/'+os.path.splitext(imageName)[0])
+        logger.debug("[DeepZeeomWrapper] Successfully copied files")
+      except Exception as e:
+        logger.debug("[DeepZoomWrapper] Error occured copying files: ")
+        logger.debug("[DeepZoomWrapper] " + e)
+        
+      logger.debug("[DeepZoomWrapper] Deleting temporary files")
+      shutil.rmtree(os.path.split(dataDirPath)[0])
+      shutil.rmtree('/code/imageuploader/image_tmp/source/' + os.path.splitext(imageName)[0])
+      logger.debug("[DeepZoomWrapper] Successfully deleted temporary files")
 
       logger.debug("[DeepZoomWrapper] Start update db")
       # r = requests.post('http://0.0.0.0:8000/imageuploader/upload/',
