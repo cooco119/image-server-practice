@@ -242,18 +242,24 @@ class App extends Component {
   async popupViewer(bucketName, imageName){
     let url = await this.getImageUrl(bucketName, imageName);
     if (url !== null){
-      let viewerWindow = window.open("", 'viewer', 'toolbar=0,status=0,width=1280px,height=960px');
+      let viewerWindow = await window.open("", 'viewer', 'toolbar=0,status=0,width=1280px,height=960px');
       let res = await axios.get(url);
       res = res.data;
+      console.log(res);
       let public_url = process.env.PUBLIC_URL;
-      viewerWindow.document.write('<div id="openseadragon1" style="width: 1280px; height: 960px;"></div>\n<script src="'+public_url+'/openseadragon.min.js"></script>\n<script>var viewer = OpenSeadragon({ \
-          element: "openseadragon1", \
-          tileSources: { \
-            type: "image", \
-            url:"'+ res+'" \
-          }, \
-          showNavigator: true, \
-        })</script>');
+      viewerWindow.document.write('\
+      <div id="openseadragon1" style="width: 1280px; height: 960px;"></div>\n\
+        <script src="'+public_url+'/openseadragon.min.js"></script>\n\
+        <script>var viewer = OpenSeadragon({ \
+            element: "openseadragon1", \
+            tileSources: { \
+              type: "image", \
+              url:"'+ res+'" \
+            }, \
+            showNavigator: true, \
+          })\
+        </script>\
+      ');
     } 
     else {
       alert("Error fetching image url");
@@ -305,7 +311,8 @@ class App extends Component {
           publicity = <td><label>Private</label></td>;
         }
         let date = <td><label>{curImage.pub_date}</label></td>;
-        let listRow = [id, bucketName, imageName, user, publicity, date]
+        let processed = <td><label>{curImage.processed.toString()}</label></td>;
+        let listRow = [id, bucketName, imageName, user, publicity, date, processed]
         listRowElems.push(<tr>{listRow}</tr>);
       }
       // console.log(listRowElems);
@@ -357,6 +364,7 @@ class App extends Component {
 
   async getImageServerInfo(bucketName, imageName){
     let url = `/imageuploader/upload/${bucketName}/${imageName}`;
+    console.log(url)
     return await axios.get(url).then( res =>{
       let responseData = JSON.parse(res.data);
       if (res.status === 200){
@@ -417,9 +425,9 @@ class App extends Component {
       //     }
       //   })
 
-      reader.onloadend = (e) => {
+      reader.onloadend = async (e) => {
         console.log(e);
-        axios.put(url, e.target.result)
+        await axios.put(url, e.target.result)
         .then((res) => {
           console.log(res)
           if (res.status !== 200){
@@ -465,16 +473,18 @@ class App extends Component {
       let appUrl = '/imageuploader/upload/';
       let d = new Date();
       d = new Date(d.getTime() - 3000000);
+      let filenameSplice = imageName.split('.');
       let data = {
         "image_name": imageName,
-        "image_format": imageName.split('.')[1],
+        "image_format": filenameSplice[filenameSplice.length -1],
         "image_data": {
           "bucketName": bucketName,
           "objectName": imageName
         },
         "user": this.state.loginvalue,
         "is_private": this.state.priavacy,
-        "pub_date": d.getFullYear().toString()+"-"+((d.getMonth()+1).toString().length===2?(d.getMonth()+1).toString():"0"+(d.getMonth()+1).toString())+"-"+(d.getDate().toString().length===2?d.getDate().toString():"0"+d.getDate().toString())+" "+(d.getHours().toString().length===2?d.getHours().toString():"0"+d.getHours().toString())+":"+((parseInt(d.getMinutes()/5)*5).toString().length===2?(parseInt(d.getMinutes()/5)*5).toString():"0"+(parseInt(d.getMinutes()/5)*5).toString())+":00"
+        "pub_date": d.getFullYear().toString()+"-"+((d.getMonth()+1).toString().length===2?(d.getMonth()+1).toString():"0"+(d.getMonth()+1).toString())+"-"+(d.getDate().toString().length===2?d.getDate().toString():"0"+d.getDate().toString())+" "+(d.getHours().toString().length===2?d.getHours().toString():"0"+d.getHours().toString())+":"+((parseInt(d.getMinutes()/5)*5).toString().length===2?(parseInt(d.getMinutes()/5)*5).toString():"0"+(parseInt(d.getMinutes()/5)*5).toString())+":00",
+        "processed": false
       }
       await axios.post(appUrl, JSON.stringify(data), {headers: {"content-type": "application/json"}})
       .then( res => {
@@ -603,6 +613,7 @@ class App extends Component {
                 <th>Uploader</th>
                 <th>Publicity</th>
                 <th>Date Time</th>
+                <th>Processed</th>
               </tr>
               {this.getImageListByName(this.state.imageList)}
             </table>
