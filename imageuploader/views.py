@@ -13,6 +13,7 @@ import datetime
 from minio import Minio
 from minio.error import (ResponseError, BucketAlreadyOwnedByYou,
                          BucketAlreadyExists)
+from .DeepZoomWrapper import DeepZoomWrapper
 # from PIL import Image as pil_Image
 
 class UploadeHandler(APIView):
@@ -31,7 +32,7 @@ class UploadeHandler(APIView):
         try:
             if minioClient.bucket_exists(bucketName):
                 try:
-                    url = minioClient.presigned_put_object(bucketName, objectName, expires=datetime.timedelta(seconds=20))
+                    url = minioClient.presigned_put_object(bucketName, objectName, expires=datetime.timedelta(seconds=300))
                     msg = "Successfully generated url"
                     m_status = status.HTTP_200_OK
                 except ResponseError as err:
@@ -44,7 +45,7 @@ class UploadeHandler(APIView):
                     minioClient.make_bucket(bucketName, location='ap-southeast-1')
                     msg = "created bucket \n"
                     try:
-                        url = minioClient.presigned_put_object(bucketName, objectName, expires=datetime.timedelta(seconds=20))
+                        url = minioClient.presigned_put_object(bucketName, objectName, expires=datetime.timedelta(seconds=300))
                         msg += "Successfully generated url"
                         m_status = status.HTTP_200_OK
                     except ResponseError as err:
@@ -82,6 +83,7 @@ class UploadeHandler(APIView):
         user = reqData.get("user")
         is_private = reqData.get("is_private")
         pub_date = reqData.get("pub_date")
+        processed = reqData.get("processed")
         preview_url = ''
 
         if not (image_format in ALLOWED_FORMATS):
@@ -134,16 +136,26 @@ class UploadeHandler(APIView):
                 m_oid.save()
             # print(pub_date)
             
-                m_image = Image(image_name=image_name, image_oid=m_oid, preview_url=preview_path, user=m_user, is_private=is_private, pub_date=pub_date)
+                m_image = Image(image_name=image_name, image_oid=m_oid, preview_url=preview_path, user=m_user, is_private=is_private, pub_date=pub_date, processed=processed)
+                
                 
                 try:
                     m_image.save()
                 except Exception as e:
                     print(e)
                 print('image saved')
+                try:
+                    # mt = DeepZoomWrapper.getInstance()
+                    if (processed == False):
+                        mt = DeepZoomWrapper()
+                        mt.put(m_image)
+                        mt.process()
+                except Exception as e:
+                    print(e)
             
                 
-        except:
+        except Exception as e:
+            print(e)
             m_status = status.HTTP_406_NOT_ACCEPTABLE
             msg = "Failed inserting DB"
             data = {

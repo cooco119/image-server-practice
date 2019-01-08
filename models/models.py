@@ -23,6 +23,7 @@ class Image(models.Model):
     user = models.ForeignKey(Users,on_delete=models.SET_NULL, related_name="Users", null=True)
     is_private = models.BooleanField(default=False, null=True)
     pub_date = models.DateTimeField(null=True)
+    processed = models.BooleanField(default=False, null=True)
 
     # objects = models.Manager()
 

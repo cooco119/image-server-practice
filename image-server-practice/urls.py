@@ -19,6 +19,7 @@ from django.urls import path, include, re_path
 from . import views
 
 urlpatterns = [
+    path('front/', include('frontend_app.urls')),
     path('imageviewer/', include('imageviewer.urls')),
     path('admin/', admin.site.urls),
     path('imageuploader/', include('imageuploader.urls')),
