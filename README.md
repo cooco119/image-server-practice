@@ -7,27 +7,26 @@
 
 # Docker Setup
 
-#### Setup & Connect to docker machine 
+~#### Setup & Connect to docker machine ~
 
-from https://docs.docker.com/machine/get-started/
+~from https://docs.docker.com/machine/get-started/~
 ```
-docker-machine create --driver virtualbox default
-docker-machine env
-eval $(docker-machine env)
+~docker-machine create --driver virtualbox default~
+~docker-machine env~
+~eval $(docker-machine env)~
 ```
 
-Setup port forwarding rule for VM -> docker engine(inside VM)
+~Setup port forwarding rule for VM -> docker engine(inside VM)~
 
-`VBoxManage modifyvm default --natpf1 "pf1,tcp,,8000,,8000"`
+~`VBoxManage modifyvm default --natpf1 "pf1,tcp,,8000,,8000"`~
 
-Start docker machine
-`docker-machine start default`
+~Start docker machine~
+~`docker-machine start default`~
 
 #### Build docker-compose
 ```
-docker-compose rm
-docker-compose build --no-cache
-docker-compose run db
+docker-compose down
+docker-compose build 
 docker-compose run web python3 manage.py migrate
 docker-compose up
 ```
@@ -45,7 +44,7 @@ or
 In local environment, access the server through the ip address & port
 ex)
 
-`http://192.168.99.100:8000'
+`http://192.168.99.100:3000'
 
 -> this is available in LAN environment too.
 
