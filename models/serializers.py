@@ -5,7 +5,7 @@ class UsersSerializer(serializers.ModelSerializer):
     # images = serializers.PrimaryKeyRelatedField(many=True, queryset=Users.objects.all())
     class Meta:
         model = Users
-        fields = ('id', 'name')
+        fields = ('id','name')
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
