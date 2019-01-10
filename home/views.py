@@ -72,8 +72,8 @@ class RegistrationHandler(APIView):
         data = request.data
         name = data.get("name")
         users = Users.objects.all()
-        if serializer.is_valid():
-            if users.filter(name=name).exists():
+        if serializer.is_valid(): 
+            if users.filter(name=name).exists(): ## => serializer에서 구현 가능 
                m_status = status.HTTP_409_CONFLICT
                msg = "User already exists!"
                data = {

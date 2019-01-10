@@ -18,9 +18,9 @@ services:
     
   web:
     build: .
-    command: python3 manage.py makemigrations
-    command: python3 manage.py migrate
-    command: python3 manage.py runserver 0.0.0.0:8000
+    # command: python3 manage.py makemigrations
+    # command: python3 manage.py migrate
+    command: uwsgi --http :8000 --module image-server-practice.wsgi
     # command: python3 manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
@@ -29,7 +29,9 @@ services:
       - imageServer
   front:
     build: ./frontend/
-    command: yarn start
+    # command: /etc/init.d/nginx start
+    # command: systemctl status nginx.service
+    command: [nginx, '-g', 'daemon off;']
     ports:
       - "3000:3000"
     depends_on:

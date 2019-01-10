@@ -74,6 +74,8 @@ RESIZE_FILTERS = {
 IMAGE_FORMATS = {
     'jpg': 'jpg',
     'png': 'png',
+    'svs':'tiff',
+    'tiff':'svs,'
     }
 
 

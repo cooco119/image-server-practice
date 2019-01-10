@@ -36,6 +36,8 @@ class App extends Component {
       etags: [],
       enabledImageList: false,
       imageUrl: null,
+      uploadProgress: 0,
+      readingProgress: 0,
     }
     this.handleSigninChange = this.handleSigninChange.bind(this);
     this.handleSigninSubmit = this.handleSigninSubmit.bind(this);
@@ -63,7 +65,7 @@ class App extends Component {
 
   handleSigninSubmit(event) {
     event.preventDefault();
-    let url = '/home/signin/';
+    let url = '/api/home/signin/';
     let headers = {
       'Content-Type': 'application/json',
     }
@@ -91,7 +93,7 @@ class App extends Component {
 
   handleRegiesterSubmit(event) {
     event.preventDefault();
-    let url = '/home/register/';
+    let url = '/api/home/register/';
     let headers = {
       'Content-Type': 'application/json',
     }
@@ -110,11 +112,10 @@ class App extends Component {
         alert('User Exists')
       }
     })
-
   }
 
   handleGridClick(name) {
-    let url = `/imageviewer/${this.state.loginvalue}/workspaces/${name}`;
+    let url = `/api/imageviewer/${this.state.loginvalue}/workspaces/${name}`;
     axios.get(url)
     .then( res => {
       let responseData = JSON.parse(res.data);
@@ -153,7 +154,7 @@ class App extends Component {
 
   GetNotice() {
     if (this.state.gotNotice === false){
-      axios.get('/home/notice/')
+      axios.get('/api/home/notice/')
       .then( async res =>{
         if (res.status === 200 ){
           let responseData = JSON.parse(res.data);
@@ -208,7 +209,7 @@ class App extends Component {
 
   GetWorkspaces(){
     if (!this.state.gotWorkspaces){
-      let url = `/imageviewer/${this.state.loginvalue}/workspaces`;
+      let url = `/api/imageviewer/${this.state.loginvalue}/workspaces`;
       axios.get(url)
       .then( res => {
         let responseData = JSON.parse(res.data);
@@ -300,7 +301,7 @@ class App extends Component {
   // }
 
   async getImageUrl(bucketName, imageName){
-    let url = `/imageviewer/images/${bucketName}/${imageName}`;
+    let url = `/api/imageviewer/images/${bucketName}/${imageName}`;
     // console.log("hello");
     return await axios.get(url)
     .then( async res => {
@@ -385,7 +386,7 @@ class App extends Component {
   }
 
   async getImageServerInfo(bucketName, imageName){
-    let url = `/imageuploader/upload/${bucketName}/${imageName}`;
+    let url = `/api/imageuploader/upload/${bucketName}/${imageName}`;
     console.log(url)
     return await axios.get(url).then( res =>{
       let responseData = JSON.parse(res.data);
@@ -420,10 +421,10 @@ class App extends Component {
         alert('Upload cancled')
       }
       let f = files[i];
-      if (!f.type.match('image.*')){
-        alert('File should be images only.')
-        return;
-      }
+      // if (!f.type.match('image.*')){
+      //   alert('File should be images only.')
+      //   return;
+      // }
       console.log(filestring);
       let filestream = fileReaderStrem(f);
       console.log(filestream);
@@ -433,23 +434,36 @@ class App extends Component {
       let url = imageServerInfo.url;
       let msg = imageServerInfo.msg;
 
-      // const formData = new FormData();
-      // formData.append(imageName, f);
-      // axios.put(url,formData)
-      //   .then((res) => {
-      //     console.log(res)
-      //     if (res.status !== 200){
-      //       console.error('image put failed')
-      //       return;
-      //     }
-      //     else{
-      //       console.log('image #' + i.toString() + ' upload successful')
-      //     }
-      //   })
+      /// Read image file
+
+      let CHUNK_SIZE = 1024 * 1024;
+      let chunks = [];
+      let offset = 0;
+      this.setState({uploadProgress: 0, readingProgress: 0});
 
       reader.onloadend = async (e) => {
-        console.log(e);
-        await axios.put(url, e.target.result)
+        chunks.push(e.target.result);
+        if (offset < f.size){
+          offset += e.target.result.length;
+          this.setState({readingProgress: offset*100/f.size});
+          let blob = f.slice(offset, offset + CHUNK_SIZE);
+          reader.readAsDataURL(blob);
+        }
+        else {
+          let result = chunks.join("");
+          console.log("Done reading file");
+          this.setState({readingProgress: 100});
+          sendFile(result);
+        }
+      }
+      let blob = f.slice(offset, offset + CHUNK_SIZE);
+      reader.readAsDataURL(f);
+      
+      // Upload to Minio server
+      
+      let sendFile = async (result) => {
+        console.log(result);
+        await axios.put(url, result)
         .then((res) => {
           console.log(res)
           if (res.status !== 200){
@@ -457,42 +471,15 @@ class App extends Component {
             return;
           }
           else{
-            console.log('image #' + i.toString() + ' upload successful')
+            console.log('image #' + i.toString() + ' upload successful');
+            this.setState({uploadProgress: 1});
           }
         })
       }
-      reader.readAsDataURL(f);
       
-      // console.log("Checking if bucket exists")
-      // minioClient.bucketExists(bucketName, function(err, exists) {
-      //   // console.log(err)
-      //   // console.log(exists)
-      //   if (!exists){
-      //     minioClient.makeBucket(bucketName, 'ap-southeast-1', function(err){
-      //       if (err) {
-      //         return alert(err)
-      //       }
-      //       else{
-      //         console.log('Bucket created successfully in "ap-southeast-1".')
-      //       }
-      //     })
-      //   }
-      //   if (exists){
-      //     return console.log('Bucket already exists')
-      //   }
-      //   if (err){
-      //     console.log("Error occured checking bucket exists")
-      //   }
-      // })
+      // Update DB
       
-      // minioClient.putObject(bucketName, imageName, filestream, (err, etag ) => {
-      //   let etags = this.state.etags;
-      //   let m_etag;
-      //   m_etag = getEtag;
-      //   etags.push(m_etag);
-      //   this.setState({etags: etags})
-      // })
-      let appUrl = '/imageuploader/upload/';
+      let appUrl = '/api/imageuploader/upload/';
       let d = new Date();
       d = new Date(d.getTime() - 3000000);
       let filenameSplice = imageName.split('.');
@@ -601,6 +588,9 @@ class App extends Component {
           <div>
             <button style={{padding: 10, textAlign: 'center'}} onClick={this.upload}>Upload</button>
           </div>
+            <div>
+              <label>File reading progress : {this.state.readingProgress} %</label>
+            </div>
         </div>
       )
     }

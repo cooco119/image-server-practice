@@ -24,5 +24,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('imageuploader/', include('imageuploader.urls')),
     path('home/', include('home.urls')),
-    # re_path(r'', views.catchall)
 ]

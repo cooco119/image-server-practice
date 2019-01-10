@@ -73,7 +73,7 @@ class UploadeHandler(APIView):
     
     def post(self, request, format=None):
 
-        ALLOWED_FORMATS = ['jpeg','jpg','png']
+        ALLOWED_FORMATS = ['jpeg','jpg','png', 'svs']
 
         reqData = request.data
         image_name = reqData.get("image_name")

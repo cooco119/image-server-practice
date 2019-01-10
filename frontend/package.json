@@ -2,7 +2,6 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://192.168.101.198:8000",
   "dependencies": {
     "@material-ui/core": "^3.7.1",
     "axios": "^0.18.0",
@@ -12,13 +11,12 @@
     "openseadragon": "^2.4.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
-    "react-navigation": "^3.0.9",
     "react-scripts": "2.1.2",
     "stream": "0.0.2"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && cp -rf build/* /usr/share/nginx/html/",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -31,5 +29,5 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "homepage": "./"
+  "homepage": "http://localhost"
 }
