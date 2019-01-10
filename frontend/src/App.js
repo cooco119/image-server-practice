@@ -223,7 +223,7 @@ class App extends Component {
             m_nameListDict.push({"user": user, "name": names[i], "handler": this.handleGridClick});
           }
           this.setState({nameListDict: m_nameListDict, nameListDictReady: true});
-          // console.log(this.state.nameListDict);
+          
         }
         else {
           alert(`Network error, try again.\nError message:${msg}`);
