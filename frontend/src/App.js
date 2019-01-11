@@ -115,7 +115,7 @@ class App extends Component {
   }
 
   handleGridClick(name) {
-    let url = `/api/imageviewer/${this.state.loginvalue}/workspaces/${name}`;
+    let url = `/api/imageviewer/${this.state.loginvalue}/workspaces/${name}/`;
     axios.get(url)
     .then( res => {
       let responseData = JSON.parse(res.data);
@@ -209,7 +209,7 @@ class App extends Component {
 
   GetWorkspaces(){
     if (!this.state.gotWorkspaces){
-      let url = `/api/imageviewer/${this.state.loginvalue}/workspaces`;
+      let url = `/api/imageviewer/${this.state.loginvalue}/workspaces/`;
       axios.get(url)
       .then( res => {
         let responseData = JSON.parse(res.data);
@@ -301,7 +301,7 @@ class App extends Component {
   // }
 
   async getImageUrl(bucketName, imageName){
-    let url = `/api/imageviewer/images/${bucketName}/${imageName}`;
+    let url = `/api/imageviewer/images/${bucketName}/${imageName}/`;
     // console.log("hello");
     return await axios.get(url)
     .then( async res => {
@@ -453,7 +453,17 @@ class App extends Component {
           let result = chunks.join("");
           console.log("Done reading file");
           this.setState({readingProgress: 100});
-          sendFile(result);
+          start: while (true){
+            let minioResult = await sendFile(result);
+            console.log(minioResult);
+            if (minioResult == "Success"){
+              await updateDB();
+              break;
+            }
+            else if (minioResult == "Fail"){
+              continue start
+            }
+          }
         }
       }
       let blob = f.slice(offset, offset + CHUNK_SIZE);
@@ -463,22 +473,24 @@ class App extends Component {
       
       let sendFile = async (result) => {
         console.log(result);
-        await axios.put(url, result)
+        return await axios.put(url, result)
         .then((res) => {
           console.log(res)
           if (res.status !== 200){
             console.error('image put failed')
-            return;
+            return "Fail";
           }
           else{
             console.log('image #' + i.toString() + ' upload successful');
             this.setState({uploadProgress: 1});
+            return "Success";
           }
         })
       }
       
       // Update DB
-      
+      let updateDB = async () => 
+      {
       let appUrl = '/api/imageuploader/upload/';
       let d = new Date();
       d = new Date(d.getTime() - 3000000);
@@ -510,7 +522,7 @@ class App extends Component {
           console.log('image #' + i.toString() + ' upload failed with error messeage of : ' + `\n${JSON.parse(res.data).msg}`);
           return;
         }
-      })
+      })}
     }
   }
 
