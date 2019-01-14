@@ -227,12 +227,17 @@ class App extends Component {
   async popupViewer(bucketName, imageName){
       let viewerWindow = await window.open("", 'viewer', 'toolbar=1,status=0,width=1280px,height=960px');
       let public_url = process.env.PUBLIC_URL;
-      console.log(public_url)
+      console.log(public_url);
       let dzi_name = imageName.substr(0, imageName.lastIndexOf('.')) + '.dzi';
-      let dzi_path = 'http://192.168.101.198:8000/front' + '/' + bucketName + '/'+ imageName.substr(0, imageName.lastIndexOf('.')) +'/' +  dzi_name;
-      console.log(dzi_path)
+      let dzi_path = ('http://192.168.101.198:8000/front' + '/' + bucketName + '/' 
+                      + imageName.substr(0, imageName.lastIndexOf('.')) +'/' +  dzi_name);
+      console.log(dzi_path);
       viewerWindow.document.write('\
-      <div id="openseadragon1" style="width: 1280px; height: 960px;"></div>\n<script src="'+public_url+'/openseadragon.js"></script>\n<script>var viewer = OpenSeadragon({ element: "openseadragon1", tileSources: "'+dzi_path+'", showNavigator: true })</script>');
+      <div id="openseadragon1" style="width: 1280px; height: 960px;"></div>\n\
+      <script src="'+public_url+'/openseadragon.js"></script>\n\
+      <script>var viewer = OpenSeadragon({ \
+        element: "openseadragon1", tileSources: "'+dzi_path+'", showNavigator: true \
+      })</script>');
 
   }
 
@@ -260,7 +265,8 @@ class App extends Component {
         let t;
         let id = <td><label>{i.toString()}</label></td>;
         let bucketName = <td><label>{curImage.image_oid__bucket_name}</label></td>;
-        let imageName = <td><label onClick={() => this.popupViewer(curImage.image_oid__bucket_name, curImage.image_name)}>{curImage.image_name}</label></td>;
+        let imageName = <td><label onClick={() => this.popupViewer(curImage.image_oid__bucket_name, curImage.image_name)}>
+                            {curImage.image_name}</label></td>;
         let user = <td><label>{curImage.user__name}</label></td>;
         let publicity = <td><label>Public</label></td>;
         if (curImage.is_private){
@@ -429,7 +435,15 @@ class App extends Component {
         },
         "user": this.state.loginvalue,
         "is_private": this.state.priavacy,
-        "pub_date": d.getFullYear().toString()+"-"+((d.getMonth()+1).toString().length===2?(d.getMonth()+1).toString():"0"+(d.getMonth()+1).toString())+"-"+(d.getDate().toString().length===2?d.getDate().toString():"0"+d.getDate().toString())+" "+(d.getHours().toString().length===2?d.getHours().toString():"0"+d.getHours().toString())+":"+((parseInt(d.getMinutes()/5)*5).toString().length===2?(parseInt(d.getMinutes()/5)*5).toString():"0"+(parseInt(d.getMinutes()/5)*5).toString())+":00",
+        "pub_date": (d.getFullYear().toString()+"-"
+                    + ((d.getMonth()+1).toString().length===2?(d.getMonth()+1).toString():"0"
+                    + (d.getMonth()+1).toString())+"-"
+                    + (d.getDate().toString().length===2?d.getDate().toString():"0"
+                    + d.getDate().toString())+" "
+                    + (d.getHours().toString().length===2?d.getHours().toString():"0"
+                    + d.getHours().toString())+":"
+                    + ((parseInt(d.getMinutes()/5)*5).toString().length===2?(parseInt(d.getMinutes()/5)*5).toString():"0"
+                    + (parseInt(d.getMinutes()/5)*5).toString())+":00"),
         "processed": false
       }
       await axios.post(appUrl, JSON.stringify(data), {headers: {"content-type": "application/json"}})
@@ -493,7 +507,10 @@ class App extends Component {
               <div>
                 <label>
                   Bucket Name:
-                  <input type="text" value={this.state.bucketName} onChange={(event) => this.setState({bucketName: event.target.value})}/>
+                  <input type="text" 
+                         value={this.state.bucketName} 
+                         onChange={(event) => this.setState({bucketName: event.target.value})}
+                  />
                 </label>
               </div>
             </div>
@@ -502,11 +519,19 @@ class App extends Component {
               <div>
                 <label>
                   Public: 
-                  <input type="radio" value="Public" onChange={(event) => this.setState({priavacy: false})} checked={!this.state.priavacy}/>
+                  <input type="radio" 
+                         value="Public" 
+                         onChange={(event) => this.setState({priavacy: false})} 
+                         checked={!this.state.priavacy}
+                  />
                 </label>
                 <label>
                   Private: 
-                  <input type="radio" value="Private" onChange={(event) => this.setState({priavacy: true})} checked={this.state.priavacy}/>
+                  <input type="radio" 
+                         value="Private" 
+                         onChange={(event) => this.setState({priavacy: true})} 
+                         checked={this.state.priavacy}
+                  />
                 </label>
               </div>
             </div>
@@ -515,7 +540,12 @@ class App extends Component {
             <form onSubmit={this.handleSigninSubmit}>
               <label>
                 File:
-                <input id='files' type="file" value={this.state.file} multiple onChange={e => this.setState({files: e.target.files})}/>
+                <input id='files' 
+                       type="file" 
+                       value={this.state.file} 
+                       multiple 
+                       onChange={e => this.setState({files: e.target.files})}
+                />
               </label>
             </form>
             </div>
