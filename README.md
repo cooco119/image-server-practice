@@ -49,5 +49,3 @@ ex)
 
 -> this is available in LAN environment too.
 
-
-Test ci
