@@ -77,36 +77,6 @@ class GetImageListByName(APIView):
             "msg":msg
         }
         return Response(data=json.dumps(data), status=m_status, content_type='application/json')
-
-class GetImageByImageName(APIView):
-    renderer_classes = (JSONRenderer, )
-
-    def get(self, request, username, name, image_name, format=None):
-        if (Users.objects.all().filter(user__name=username).exists()):
-
-            if (Image.objects.all().filter(user__name=name)
-                                   .filter(image_name=image_name).exists()):
-
-                msg = "Success"
-                m_status = status.HTTP_200_OK
-                img = Image.objects.all().filter(user__name=name) \
-                                         .filter(image_name=image_name) \
-                                         .values(
-                                             'image_name', 
-                                             'image_oid', 
-                                             'user__name', 
-                                             'is_private', 
-                                             'pub_date'
-                                         )
-            else:
-                msg = "Image Not Found"
-                m_status = status.HTTP_404_NOT_FOUND
-                img = None
-
-        else:
-            msg = "User Not Found"
-            m_status = status.HTTP_404_NOT_FOUND
-            img = None
         
 class GetPresignedImageGetUrl(APIView):
     renderer_classes = (JSONRenderer, )
