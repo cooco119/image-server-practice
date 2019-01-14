@@ -2,14 +2,8 @@ import React, { Component } from 'react';
 import './App.css';
 import axios from 'axios';
 import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import ReactDOM from 'react-dom';
 import GridElement from './MakeGridElement.jsx';
-import * as Minio from 'minio';
-import { string, func } from 'prop-types';
 import * as fileReaderStrem from 'filereader-stream';
-import OpenSeadragon from 'openseadragon';
-import * as path from 'path';
 
 class App extends Component {
   constructor(props){
@@ -52,7 +46,6 @@ class App extends Component {
     this.setImagesChildOfTableRow = this.setImagesChildOfTableRow.bind(this);
     this.getImageUrl = this.getImageUrl.bind(this);
     this.popupViewer = this.popupViewer.bind(this);
-    // this.openSeaDragonViewer = this.openSeaDragonViewer.bind(this);
   }
 
   componentWillMount(){
@@ -184,7 +177,6 @@ class App extends Component {
   }
 
   Register() {
-    // if (!this.state.isRegistered){
       return (
         <div>
           <form onSubmit={this.handleRegiesterSubmit}>
@@ -197,14 +189,6 @@ class App extends Component {
         <label>{this.state.msg2}</label>
         </div>
       )
-    // }
-    // else {
-    //   return (
-    //     <div>
-    //       <h5>Registered successfully!</h5>
-    //     </div>
-    //   )
-    // }
   }
 
   GetWorkspaces(){
@@ -234,7 +218,6 @@ class App extends Component {
       if (this.state.nameListDictReady){
         return (
           <Grid container id='grid-container' spacing={24}>
-            {/* {console.log(this.state.names.map())} */}
             {this.createGrid(this.state.nameListDict)}
           </Grid>
         )
@@ -242,74 +225,24 @@ class App extends Component {
     }
   }
   async popupViewer(bucketName, imageName){
-    // let url = await this.getImageUrl(bucketName, imageName);
-    // console.log('popupViewer_url: '+url)
-    // if (url !== null){
       let viewerWindow = await window.open("", 'viewer', 'toolbar=1,status=0,width=1280px,height=960px');
-      // let res = await axios.get(url);
-      // let xml = res.data;
-      // console.log(res);
       let public_url = process.env.PUBLIC_URL;
       console.log(public_url)
-      // let re = /(?:\.([^.]+))?$/;
       let dzi_name = imageName.substr(0, imageName.lastIndexOf('.')) + '.dzi';
-      let dzi_path = 'http://192.168.101.198:8000/front' + '/'+ imageName.substr(0, imageName.lastIndexOf('.')) +'/' +  dzi_name;
+      let dzi_path = 'http://192.168.101.198:8000/front' + '/' + bucketName + '/'+ imageName.substr(0, imageName.lastIndexOf('.')) +'/' +  dzi_name;
       console.log(dzi_path)
-      let dziFilesUrl = dzi_path;
-      // let dziData = xml;
-      let tileSourceFromData = function(data, filesUrl) {
-        let parser = new DOMParser();
-        let xmlDoc = parser.parseFromString(data, "text/xml");
-        console.log(xmlDoc);
-        let image = xmlDoc.getElementsByTagName('Image')[0];
-        let size = xmlDoc.getElementsByTagName('Size')[0];
-
-        let dzi = {
-          Image: {
-            xmlns: image.getAttribute('xmlns'),
-            Url: filesUrl,
-            Format: image.getAttribute('Format'),
-            Overlap: image.getAttribute('Overlap'),
-            TileSize: image.getAttribute('TileSize'),
-            Size: {
-              Height: size.getAttribute('Height'),
-              Width: size.getAttribute('Width')
-            }
-          }
-        }
-        console.log(dzi);
-        return dzi;
-      };
-      //JSON.stringify(tileSourceFromData(dziData, dziFilesUrl))
       viewerWindow.document.write('\
       <div id="openseadragon1" style="width: 1280px; height: 960px;"></div>\n<script src="'+public_url+'/openseadragon.js"></script>\n<script>var viewer = OpenSeadragon({ element: "openseadragon1", tileSources: "'+dzi_path+'", showNavigator: true })</script>');
-    // } 
-    // else {
-    //   alert("Error fetching image url");
-    // }
+
   }
-  // openSeaDragonViewer(url){
-  //   let viewer = OpenSeadragon({
-  //     id: "openseadragon1",
-  //     tileSources: {
-  //       type: "image",
-  //       url: res
-  //     },
-  //     showNavigator: true,
-  //   })
-  //   return;
-  // }
 
   async getImageUrl(bucketName, imageName){
     let url = `/api/imageviewer/images/${bucketName}/${imageName}/`;
-    // console.log("hello");
     return await axios.get(url)
     .then( async res => {
       let responseData = JSON.parse(res.data);
       if (res.status === 200){
         let url = responseData.url;
-        // console.log(url);
-        // this.setState({imageUrl: url});
         return url;
       }
       else{
@@ -338,8 +271,6 @@ class App extends Component {
         let listRow = [id, bucketName, imageName, user, publicity, date, processed]
         listRowElems.push(<tr>{listRow}</tr>);
       }
-      // console.log(listRowElems);
-      // console.log(<tr>test</tr>)
       return (
         <tbody>{listRowElems}</tbody>
       )
@@ -363,7 +294,6 @@ class App extends Component {
   }
 
   createGrid = function(nameListDict){
-    // console.log(nameListDict);
     return nameListDict.map(this.createGridElement);
   }
 
@@ -416,15 +346,10 @@ class App extends Component {
       reader.onerror = (e) => {
         console.error(e);
       }
-      // reader.onprogress = updateProgress;
       reader.onabort = (e) => {
         alert('Upload cancled')
       }
       let f = files[i];
-      // if (!f.type.match('image.*')){
-      //   alert('File should be images only.')
-      //   return;
-      // }
       console.log(filestring);
       let filestream = fileReaderStrem(f);
       console.log(filestream);
@@ -592,7 +517,6 @@ class App extends Component {
                 File:
                 <input id='files' type="file" value={this.state.file} multiple onChange={e => this.setState({files: e.target.files})}/>
               </label>
-              {/* <button onClick={document.getElementById('file').click()}>Open</button> */}
             </form>
             </div>
           </div>

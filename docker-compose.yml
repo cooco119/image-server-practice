@@ -20,8 +20,8 @@ services:
     build: .
     # command: python3 manage.py makemigrations
     # command: python3 manage.py migrate
-    command: uwsgi --http :8000 --module image-server-practice.wsgi
-    # command: python3 manage.py runserver 0.0.0.0:8000
+    # command: uwsgi --http :8000 --module image-server-practice.wsgi  // Threading 에서 문제가 발생 -> process 갯수 조절 필요?
+    command: python3 manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
     depends_on:
@@ -33,6 +33,6 @@ services:
     # command: systemctl status nginx.service
     command: [nginx, '-g', 'daemon off;']
     ports:
-      - "3000:3000"
+      - "80:80"
     depends_on:
       - web

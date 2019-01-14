@@ -43,19 +43,22 @@ class DeepZoomWrapper(object):
     for fn, args in self.__eventListners[imageName]:
       fn(args)
   
-  def imageFetcher(self, bucketName, objectName):
+  def imageFetcher(self, bucketName, objectName, logger):
     minioClient = Minio('192.168.101.198:9000',
                         access_key='FM9GO6CT17O8122165HB',
                         secret_key='yLyai1DFC03hzN17srK0PvYTIZFvHDnDxRKYAjK4',
                         secure=False)
+    logger.debug("[ImageFetcher] Initializing paths")
     dirPath = os.path.join(os.getcwd(), 'imageuploader', 'image_tmp', 'source', os.path.splitext(objectName)[0])
     os.mkdir(dirPath)
     imagePath = os.path.join(os.getcwd(), 'imageuploader', 'image_tmp', 'source', os.path.splitext(objectName)[0], objectName )
+    logger.debug("[ImageFetcher] Trying to get image data from minio server")
     imageData = None
     imageFormat = ""
     exists = False
     while not exists:
       try:
+        logger.debug("[ImageFetcher] Trying to connect..")
         data = minioClient.get_object(bucketName, objectName)
       except:
         time.sleep(0.5)
@@ -65,6 +68,8 @@ class DeepZoomWrapper(object):
     try:
       # os.mknod(imagePath)
       # data = minioClient.get_object(bucketNam
+      logger.debug("[ImageFetcher] Image get successful.")
+      logger.debug("[ImageFetcher] Start writing image file..")
       with open(imagePath, 'wb+') as file_data:    
         for d in data.stream(32*1024):
           if imageData is None:
@@ -75,10 +80,11 @@ class DeepZoomWrapper(object):
         imageFileData = base64.b64decode(imageData)
         file_data.write(imageFileData)
         file_data.close()
+        logger.debug("[ImageFetcher] Successfully wrote image file")
         return imagePath
 
     except ResponseError as err:
-      print(err)
+      logger.error(err)
 
   def imageTiler(self, imagePath, logger):
     creator = deepzoom.ImageCreator(tile_size=128, tile_overlap=2, tile_format="png",
@@ -127,11 +133,12 @@ class DeepZoomWrapper(object):
 
       logger.debug("[DeepZoomWrapper] Copying files to frontend/public/")
       try:
-        shutil.copytree(os.path.split(dataDirPath)[0], '/code/frontend_app/deepzoom/'+os.path.splitext(imageName)[0])
+        shutil.copytree(os.path.split(dataDirPath)[0], '/code/frontend_app/deepzoom/'+bucketName+'/'+os.path.splitext(imageName)[0])
         logger.debug("[DeepZeeomWrapper] Successfully copied files")
       except Exception as e:
         logger.debug("[DeepZoomWrapper] Error occured copying files: ")
         logger.debug("[DeepZoomWrapper] " + e)
+        self.__imageQueue.pop()
         
       logger.debug("[DeepZoomWrapper] Deleting temporary files")
       shutil.rmtree(os.path.split(dataDirPath)[0])
@@ -173,12 +180,15 @@ class DeepZoomWrapper(object):
             logger.debug("[DeepZoomWrapper] Successfully deleted unprocessed image")
 
       except Exception as e:
-        print(e)
+        logger.debug("[Exception] at DeepZoomWrapper:183 " + e)
         logger.debug("[DeepZoomWrapper] Object exists?")
+        self.__imageQueue.pop()
+
       logger.debug("[DeepZoomWrapper] Succesfully updated db")
 
     except ResponseError as err:
-      print(err)
+      logger.debug("[ResponseError] at DeepZoomWrapper:190 " + err)
+      self.__imageQueue.pop()
     
     return
 
@@ -194,6 +204,7 @@ class DeepZoomWrapper(object):
           logger.debug("[DeepZoomWrapper] Sent file: " + filename)
           file_data.close()
       except Exception as e:
+        self.__imageQueue.pop()
         logger.debug(e)
     elif os.path.isdir(path):
       for content in os.listdir(path):
@@ -206,15 +217,17 @@ class DeepZoomWrapper(object):
 
   def handleImage(self, image, logger):
     start = time.time()
-    logger.debug('[DeepZoomWrapper] Started at: '+ time.strftime('%H-%M-%S'))
+    logger.debug('[DeepZoomWrapper] Started at: '+ time.strftime("%H-%M-%S"))
     bucketName = image.image_oid.bucket_name
     objectName = image.image_name
-    logger.debug('[DeepZoomWrapper] Entering imageFetcher at: ' + time.strftime('%H-%M-%S'))
-    imagePath = self.imageFetcher(bucketName, objectName)
+    logger.debug("[DeepZoomWrapper] bucketName: " + bucketName + ", objectName: " + objectName)
+    logger.debug("[DeepZoomWrapper] Entering imageFetcher at: " + time.strftime("%H-%M-%S"))
+    imagePath = self.imageFetcher(bucketName, objectName, logger)
     logger.debug("[DeepZoomWrapper] Fetched image path: " + imagePath)
-    logger.debug('[DeepZoomWrapper] Entering imageTiler at: ' + time.strftime('%H-%M-%S'))
+    logger.debug("[DeepZoomWrapper] Entering imageTiler at: " + time.strftime("%H-%M-%S"))
     imagePath_processed = self.imageTiler(imagePath, logger)
     elapsed = time.time() - start
+    self.__imageQueue.pop()
     # logger.debug('Image handling took ' + time.strftime("%S",elapsed) + 'seconds')
     return self.updateImage(image, imagePath_processed, logger)
 
@@ -231,16 +244,19 @@ class DeepZoomWrapper(object):
       ch.setFormatter(formatter)
       logger.addHandler(ch)
 
+      logger.debug("Creating thread..")
       m_thread = Thread(target=self.handleImage, name=image.image_name, args=(image, logger,))
       m_thread.start()
       threads[m_thread.name] = m_thread
+      # m_thread.join()
+      # self.__imageQueue.pop()
     
     start = time.time()
     elapsed = time.time() - start
     while threads:
       elapsed = time.time() - start
       if (elapsed % 5 == 0):
-        print("processing " + len(threads) + "images for " + elapsed + " seconds.")
+        logger.debug("[DeepZoomWrapper] processing " + len(threads) + "images for " + elapsed + " seconds.")
       for name, thread in threads:
         if not thread.is_alive():
           imageName = thread.name
