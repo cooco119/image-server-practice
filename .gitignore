@@ -6,3 +6,4 @@ image-server-practice/__pycache__/*
 node_modules/**/*
 node_moduels/*
 frontend_app/deepzoom
+connect-docker-machine.sh
