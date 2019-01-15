@@ -10,6 +10,7 @@ import os
 import logging
 import sys
 
+
 # Create your tests here.
 class ImageviewerTestCase(TestCase):
     logger = logging.getLogger()
@@ -28,38 +29,37 @@ class ImageviewerTestCase(TestCase):
             "sample_image_4_market.jpg",
             "sample_image_5_stairs.jpg"
         ]
-        
+
         # Image.objects.create(
-        #     image_name=sample_image_names[0], 
+        #     image_name=sample_image_names[0],
         #     image_oid=os.path.join(BASE_DIR, sample_image_names[0]),
         #     user="Alex",
         #     is_private=False
         # )
         # Image.objects.create(
-        #     image_name=sample_image_names[1], 
+        #     image_name=sample_image_names[1],
         #     image_oid=os.path.join(BASE_DIR, sample_image_names[1]),
         #     user="Alex",
         #     is_private=True
         # )
         # Image.objects.create(
-        #     image_name=sample_image_names[2], 
+        #     image_name=sample_image_names[2],
         #     image_oid=os.path.join(BASE_DIR, sample_image_names[2]),
         #     user="Alex",
         #     is_private=False
         # )
         # Image.objects.create(
-        #     image_name=sample_image_names[3], 
+        #     image_name=sample_image_names[3],
         #     image_oid=os.path.join(BASE_DIR, sample_image_names[3]),
         #     user="jaejun",
         #     is_private=False
         # )
         # Image.objects.create(
-        #     image_name=sample_image_names[4], 
+        #     image_name=sample_image_names[4],
         #     image_oid=os.path.join(BASE_DIR, sample_image_names[4]),
         #     user="jaejun",
         #     is_private=True
         # )
-        
 
     # def test_imageviewer_view_get_workspaces_via_absolute_url(self):
     #     response = self.client.get('/imageviewer/Alex/workspaces/')

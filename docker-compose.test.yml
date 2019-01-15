@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  web:
+    image: cooco119/image-server-practice:web_latest
+    command: python3 manage.py test
+    container_name: image-server-practice_web_test
+    ports:
+      - "15161:8000"
+  front:
+    image: cooco119/image-server-practice:front_latest
+    container_name: image-server-practice_front_test
+    command: [nginx, '-g', 'daemon off;']
+    ports:
+      - "15162:80"
+    depends_on:
+      - web
