@@ -10,7 +10,8 @@ WORKDIR /code_front
 ADD package.json /code_front/
 RUN npm install
 ADD . /code_front/
-RUN mkdir -p /etc/apt
+# RUN mkdir -p /etc/apt
+RUN ls /etc/apt
 RUN echo "deb http://ppa.launchpad.net/nginx/stable/ubuntu bionic main" >> /etc/apt/sources.list
 RUN apt-key add nginx_signing.key
 RUN apt-get update
