@@ -19,7 +19,6 @@ RUN cp -f nginx.conf /etc/nginx/
 RUN cp -f uwsgi_params /etc/nginx/
 RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 	  && ln -sf /dev/stderr /var/log/nginx/error.log
-# EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 RUN rm -rf /usr/share/nginx/html
 RUN mkdir -p /usr/share/nginx/html/
