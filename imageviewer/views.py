@@ -84,7 +84,7 @@ class GetPresignedImageGetUrl(APIView):
     def get(self, request, bucketName, objectName, format=None):
 
         if (oid.objects.all().filter(bucket_name=bucketName).filter(object_name=objectName).exists()):
-            minioClient = Minio('192.168.0.162:9000',
+            minioClient = Minio('192.168.101.198:9000',
                             access_key='FM9GO6CT17O8122165HB',
                             secret_key='yLyai1DFC03hzN17srK0PvYTIZFvHDnDxRKYAjK4',
                             secure=False)
