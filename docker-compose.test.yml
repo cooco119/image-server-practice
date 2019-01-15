@@ -2,7 +2,6 @@ version: '3'
 
 services:
   db:
-    # image: postgres
     build: ./db
     ports:
       - "5432:5432"
@@ -18,9 +17,6 @@ services:
     
   web:
     build: .
-    # command: python3 manage.py makemigrations
-    # command: python3 manage.py migrate
-    # command: uwsgi --http :8000 --module image-server-practice.wsgi  // Threading 에서 문제가 발생 -> process 갯수 조절 필요?
     command: bash -c "python manage.py migrate && python manage.py test"
     ports:
       - "8000:8000"

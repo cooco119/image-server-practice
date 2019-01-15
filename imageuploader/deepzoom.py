@@ -150,7 +150,7 @@ class DeepZoomImageDescriptor(object):
     def get_num_tiles(self, level):
         """Number of tiles (columns, rows)"""
         assert 0 <= level and level < self.num_levels, 'Invalid pyramid level'
-        w, h = self.get_dimensions( level )
+        w, h = self.get_dimensions(level)
         return (int(math.ceil(float(w) / self.tile_size)),
                 int(math.ceil(float(h) / self.tile_size)))
 
@@ -164,14 +164,14 @@ class DeepZoomImageDescriptor(object):
         level_width, level_height = self.get_dimensions(level)
         w = self.tile_size + (1 if column == 0 else 2) * self.tile_overlap
         h = self.tile_size + (1 if row == 0 else 2) * self.tile_overlap
-        w = min(w, level_width  - x)
+        w = min(w, level_width - x)
         h = min(h, level_height - y)
         return (x, y, x + w, y + h)
 
 
 class DeepZoomCollection(object):
     def __init__(self, filename, image_quality=0.8, max_level=7,
-                tile_size=256, tile_format='jpg', items=[]):
+                 tile_size=256, tile_format='jpg', items=[]):
         self.source = filename
         self.image_quality = image_quality
         self.tile_size = tile_size
@@ -221,8 +221,8 @@ class DeepZoomCollection(object):
     def append(self, source):
         descriptor = DeepZoomImageDescriptor()
         descriptor.open(source)
-        item = DeepZoomCollectionItem(source, descriptor.width, descriptor.height,
-                                     id=self.next_item_id)
+        item = DeepZoomCollectionItem(source, descriptor.width,
+                                      descriptor.height, id=self.next_item_id)
         self.items.append(item)
         self.next_item_id += 1
 
@@ -256,17 +256,19 @@ class DeepZoomCollection(object):
         descriptor.open(path)
         files_path = _get_or_create_path(_get_files_path(self.source))
         for level in reversed(range(self.max_level + 1)):
-            level_path = _get_or_create_path('%s/%s'%(files_path, level))
+            level_path = _get_or_create_path('%s/%s' % (files_path, level))
             level_size = 2**level
             images_per_tile = int(math.floor(self.tile_size / level_size))
             column, row = self.get_tile_position(i, level, self.tile_size)
-            tile_path = '%s/%s_%s.%s'%(level_path, column, row, self.tile_format)
+            tile_path = '%s/%s_%s.%s' % (level_path, column, row,
+                                         self.tile_format)
             if not os.path.exists(tile_path):
-                tile_image = PIL.Image.new('RGB', (self.tile_size, self.tile_size))
+                tile_image = PIL.Image.new('RGB',
+                                           (self.tile_size, self.tile_size))
                 q = int(self.image_quality * 100)
                 tile_image.save(tile_path, 'JPEG', quality=q)
             tile_image = PIL.Image.open(tile_path)
-            source_path = '%s/%s/%s_%s.%s'%(_get_files_path(path), level, 0, 0,
+            source_path = '%s/%s/%s_%s.%s' % (_get_files_path(path), level, 0, 0,
                                             descriptor.tile_format)
             # Local
             if os.path.exists(source_path):
@@ -281,7 +283,8 @@ class DeepZoomCollection(object):
                     try:
                         source_image = PIL.Image.open(safe_open(source_path))
                     except IOError:
-                        warnings.warn('Skipped invalid image: %s' % source_path)
+                        warnings.warn('Skipped invalid image: %s'
+                                      % source_path)
                         return
                     # Expected width & height of the tile
                     e_w, e_h = descriptor.get_dimensions(level)
@@ -291,7 +294,8 @@ class DeepZoomCollection(object):
                     # have wrong dimensions (they are too large)
                     if w != e_w or h != e_h:
                         # Resize incorrect tile to correct size
-                        source_image = source_image.resize((e_w, e_h), PIL.Image.ANTIALIAS)
+                        source_image = source_image.resize(
+                            (e_w, e_h), PIL.Image.ANTIALIAS)
                         # Store new dimensions
                         w, h = e_w, e_h
                 else:
@@ -315,7 +319,7 @@ class DeepZoomCollection(object):
             column_mask = 1 << column_offset
             column_value = (z_order & column_mask) >> column_offset
             column |= column_value << offset
-            #row
+            # row
             row_offset = i + 1
             row_mask = 1 << row_offset
             row_value = (z_order & row_mask) >> row_offset

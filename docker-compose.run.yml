@@ -2,7 +2,6 @@ version: '3'
 
 services:
   db:
-    # image: postgres
     image: cooco119/image-server-practice:db_latest
     ports:
       - "5432:5432"
@@ -26,8 +25,6 @@ services:
       - imageServer
   front:
     image: cooco119/image-server-practice:front_latest
-    # command: /etc/init.d/nginx start
-    # command: systemctl status nginx.service
     command: [nginx, '-g', 'daemon off;']
     ports:
       - "80:80"
