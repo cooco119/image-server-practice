@@ -18,7 +18,9 @@ services:
     
   web:
     build: .
-    image: cooco119/image-server-practice:web_latest
+    # command: python3 manage.py makemigrations
+    # command: python3 manage.py migrate
+    # command: uwsgi --http :8000 --module image-server-practice.wsgi  // Threading 에서 문제가 발생 -> process 갯수 조절 필요?
     command: python3 manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"

@@ -25,6 +25,8 @@ services:
       - imageServer
   front:
     build: ./frontend/
+    # command: /etc/init.d/nginx start
+    # command: systemctl status nginx.service
     command: [nginx, '-g', 'daemon off;']
     ports:
       - "80:80"
