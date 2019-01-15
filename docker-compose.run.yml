@@ -18,6 +18,7 @@ services:
   web:
     image: cooco119/image-server-practice:web_latest
     command: python3 manage.py runserver 0.0.0.0:8000
+    container_name: image-server-practice_web_1
     ports:
       - "8000:8000"
     depends_on:
@@ -25,6 +26,7 @@ services:
       - imageServer
   front:
     image: cooco119/image-server-practice:front_latest
+    container_name: image-server-practice_front_1
     command: [nginx, '-g', 'daemon off;']
     ports:
       - "80:80"
