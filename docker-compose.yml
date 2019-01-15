@@ -18,9 +18,7 @@ services:
     
   web:
     build: .
-    # command: python3 manage.py makemigrations
-    # command: python3 manage.py migrate
-    # command: uwsgi --http :8000 --module image-server-practice.wsgi  // Threading 에서 문제가 발생 -> process 갯수 조절 필요?
+    image: cooco119/image-server-practice:web_latest
     command: python3 manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
@@ -29,6 +27,7 @@ services:
       - imageServer
   front:
     build: ./frontend/
+    image: cooco119/image-server-practice:front_latest
     # command: /etc/init.d/nginx start
     # command: systemctl status nginx.service
     command: [nginx, '-g', 'daemon off;']
