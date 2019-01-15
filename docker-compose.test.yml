@@ -1,34 +1,17 @@
 version: '3'
 
 services:
-  db:
-    build: ./db
-    ports:
-      - "5432:5432"
-  
-  imageServer:
-    image: minio/minio:RELEASE.2018-12-27T18-33-08Z
-    ports:
-      - "9000:9000"
-    environment:
-      MINIO_ACCESS_KEY: FM9GO6CT17O8122165HB
-      MINIO_SECRET_KEY: yLyai1DFC03hzN17srK0PvYTIZFvHDnDxRKYAjK4
-    command: server /data
-    
   web:
-    build: .
-    command: bash -c "python manage.py migrate && python manage.py test"
+    image: cooco119/image-server-practice:web_latest
+    command: python3 manage.py test
+    container_name: image-server-practice_web_test
     ports:
-      - "8000:8000"
-    depends_on:
-      - db 
-      - imageServer
+      - "15161:8000"
   front:
-    build: ./frontend/
-    # command: /etc/init.d/nginx start
-    # command: systemctl status nginx.service
+    image: cooco119/image-server-practice:front_latest
+    container_name: image-server-practice_front_test
     command: [nginx, '-g', 'daemon off;']
     ports:
-      - "80:80"
+      - "15162:80"
     depends_on:
       - web
