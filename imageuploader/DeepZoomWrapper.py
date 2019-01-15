@@ -44,7 +44,7 @@ class DeepZoomWrapper(object):
       fn(args)
   
   def imageFetcher(self, bucketName, objectName, logger):
-    minioClient = Minio('192.168.0.162:9000',
+    minioClient = Minio('192.168.101.198:9000',
                         access_key='FM9GO6CT17O8122165HB',
                         secret_key='yLyai1DFC03hzN17srK0PvYTIZFvHDnDxRKYAjK4',
                         secure=False)
@@ -102,7 +102,7 @@ class DeepZoomWrapper(object):
 
   def updateImage(self, image, imagePath, logger):
     logger.debug("[DeepZoomWrapper] Start sending to minio server")
-    minioClient = Minio('192.168.0.162:9000',
+    minioClient = Minio('192.168.101.198:9000',
                         access_key='FM9GO6CT17O8122165HB',
                         secret_key='yLyai1DFC03hzN17srK0PvYTIZFvHDnDxRKYAjK4',
                         secure=False)
@@ -166,7 +166,7 @@ class DeepZoomWrapper(object):
         if (oid.objects.all().filter(bucket_name=bucketName).filter(object_name=imageName).exists()):
             raise Exception
         else:
-            m_oid = oid(url='192.168.0.162:9000', bucket_name=bucketName, object_name=imageName)
+            m_oid = oid(url='192.168.101.198:9000', bucket_name=bucketName, object_name=imageName)
             m_oid.save()
             m_user = Users.objects.all().filter(name=user).get()
             m_image = Image(image_name=imageName, image_oid=m_oid, preview_url="", user=m_user, is_private=is_private, pub_date=pub_date, processed=processed)
