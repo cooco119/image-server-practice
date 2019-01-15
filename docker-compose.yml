@@ -29,8 +29,7 @@ services:
       - imageServer
   front:
     build: ./frontend/
-    # command: /etc/init.d/nginx start
-    # command: systemctl status nginx.service
+    image: cooco119/image-server-practice:front_latest
     command: [nginx, '-g', 'daemon off;']
     ports:
       - "80:80"
