@@ -11,9 +11,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-# import logging.config
-
-# logging.config.fileConfig('../logging.conf')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -91,10 +88,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
         'USER': 'postgres',
-        # 'HOST': 'db',
         'HOST': '192.168.0.162',
-        # 'HOST': '127.0.0.1',
-        # 'HOST': '0.0.0.0',
         'PORT': 5432,
     }
 }
@@ -140,10 +134,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-# STATIC_ROOT = os.path.join(FRONTEND_DIR, 'build', 'static')
 STATIC_URL = '/static/'
-
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
@@ -151,34 +142,51 @@ STATICFILES_DIRS = (
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-# CORS_ORIGIN_WHITELIST = (
-#     'http://localhost:3000/',
-# )
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
     'formatters': {
         'verbose': {
-            'format': '[%(module)s] %(message)s'
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d \
+%(thread)d %(message)s'
         },
+        'simple': {
+            'format': '[%(module)s] %(message)s',
+        }
     },
     'handlers': {
         'console': {
-            'level': 'NOTSET',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'logfile': {
+            'level': 'NOTSET',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/django.log',
             'formatter': 'verbose'
         }
     },
     'loggers': {
         '': {
-            'handlers': ['console'],
-            'level': 'NOTSET',
+            'handlers': ['console', 'logfile'],
+            'level': 'INFO',
         },
         'django.request': {
-            'handlers': ['console'],
+            'handlers': ['console', 'logfile'],
             'propagate': True,
-            'level': 'ERROR'
-        }
+            'level': 'NOTSET'
+        },
+        'django.server': {
+            'handlers': ['console', 'logfile'],
+            'propagate': True,
+            'level': 'NOTSET'
+        },
+        'django.db.backends': {
+            'handlers': ['console', 'logfile'],
+            'propagate': True,
+            'level': 'NOTSET'
+        },
+
     }
 }
