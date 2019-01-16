@@ -170,7 +170,7 @@ LOGGING = {
     'loggers': {
         '': {
             'handlers': ['console', 'logfile'],
-            'level': 'INFO',
+            'level': 'NOTSET',
         },
         'django.request': {
             'handlers': ['console', 'logfile'],
