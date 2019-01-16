@@ -5,6 +5,9 @@ from pathlib import PurePath, Path
 import os
 from threading import Thread
 from queue import Queue
+import logging
+
+logger = logging.getLogger(name=__name__)
 
 minioClient = Minio(
     '192.168.0.162:9000',
@@ -63,9 +66,12 @@ def setQueueAndStart():
                 finishedBucketName = thread.name
                 print("Successfully pulled " + finishedBucketName)
                 numThreads -= 1
-        for idx in threadIdxToBePoped:
-            threadList.pop(idx)
-        threadIdxToBePoped = []
+        try:
+            for idx in threadIdxToBePoped:
+                threadList.pop(idx)
+            threadIdxToBePoped = []
+        except Exception as e:
+            logger.Error(e)
 
         if len(threadList) == 0:
             return
