@@ -163,7 +163,7 @@ LOGGING = {
         'logfile': {
             'level': 'NOTSET',
             'class': 'logging.FileHandler',
-            'filename': '/var/log/django.log',
+            'filename': '/log/django.log',
             'formatter': 'verbose'
         }
     },
