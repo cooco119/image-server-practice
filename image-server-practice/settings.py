@@ -175,17 +175,17 @@ LOGGING = {
         'django.request': {
             'handlers': ['console', 'logfile'],
             'propagate': True,
-            'level': 'NOTSET'
+            'level': 'ERROR'
         },
         'django.server': {
             'handlers': ['console', 'logfile'],
             'propagate': True,
-            'level': 'NOTSET'
+            'level': 'ERROR'
         },
         'django.db.backends': {
             'handlers': ['console', 'logfile'],
             'propagate': True,
-            'level': 'NOTSET'
+            'level': 'ERROR'
         },
 
     }
