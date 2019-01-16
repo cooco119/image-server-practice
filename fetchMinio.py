@@ -40,6 +40,7 @@ def setQueueAndStart():
     numThreads = 0
     MAX_THREAD_NUMBER = 4
     threadList = []
+    threadIdxToBePoped = []
     while True:
         if numThreads < MAX_THREAD_NUMBER and not queue.empty():
             for i in range(MAX_THREAD_NUMBER - numThreads - 1):
@@ -58,9 +59,13 @@ def setQueueAndStart():
             except:
                 print("Thread " + thread.name + " is still running")
             if not thread.is_alive():
-                finishedBucketName = threadList.pop(i).name
+                threadIdxToBePoped.append(i)
+                finishedBucketName = thread.name
                 print("Successfully pulled " + finishedBucketName)
                 numThreads -= 1
+        for idx in threadIdxToBePoped:
+            threadList.pop(idx)
+        threadIdxToBePoped = []
 
         if len(threadList) == 0:
             return
