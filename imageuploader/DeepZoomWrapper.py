@@ -52,7 +52,7 @@ class DeepZoomWrapper(object):
             secure=False
         )
 
-        logger.debug("[ImageFetcher] Initializing paths")
+        logger.debug("Initializing paths")
         dirPath = os.path.join(os.getcwd(),
                                'imageuploader',
                                'image_tmp',
@@ -66,7 +66,7 @@ class DeepZoomWrapper(object):
                                  os.path.splitext(objectName)[0],
                                  objectName)
 
-        logger.debug("[ImageFetcher] Trying to get \
+        logger.debug("Trying to get \
 image data from minio server")
         imageData = None
         imageFormat = ""
@@ -74,7 +74,7 @@ image data from minio server")
 
         while not exists:
             try:
-                logger.debug("[ImageFetcher] Trying to connect..")
+                logger.debug("Trying to connect..")
                 data = minioClient.get_object(bucketName, objectName)
 
             except:
@@ -85,8 +85,8 @@ image data from minio server")
                 exists = True
         try:
 
-            logger.debug("[ImageFetcher] Image get successful.")
-            logger.debug("[ImageFetcher] Start writing image file..")
+            logger.debug("Image get successful.")
+            logger.debug("Start writing image file..")
 
             with open(imagePath, 'wb+') as file_data:
                 for d in data.stream(32*1024):
@@ -98,7 +98,7 @@ image data from minio server")
                 imageFileData = base64.b64decode(imageData)
                 file_data.write(imageFileData)
                 file_data.close()
-                logger.debug("[ImageFetcher] Successfully wrote image file")
+                logger.debug("Successfully wrote image file")
 
                 return imagePath
 
@@ -122,16 +122,16 @@ image data from minio server")
                                 filename
                                 )
 
-        logger.debug("[DeepZoomWrapper] Source path: " + imagePath)
-        logger.debug("[DeepZoomWrapper] Result path: " + res_path)
-        logger.debug("[DeepZoomWrapper] Entering deepzoom api")
+        logger.debug("Source path: " + imagePath)
+        logger.debug("Result path: " + res_path)
+        logger.debug("Entering deepzoom api")
         creator.create(imagePath, res_path, logger)
 
         return res_path
 
     def updateImage(self, image, imagePath, logger):
 
-        logger.debug("[DeepZoomWrapper] Start sending to minio server")
+        logger.debug("Start sending to minio server")
         minioClient = Minio(
             '192.168.0.162:9000',
             access_key='FM9GO6CT17O8122165HB',
@@ -165,7 +165,7 @@ image data from minio server")
                 file_data.close()
 
             logger.debug(
-                "[DeepZoomWrapper] Starting upload \
+                "Starting upload \
 recursively to minio server, starting from " +
                 dataDirPath)
             self.uploadRecursively(
@@ -177,9 +177,9 @@ recursively to minio server, starting from " +
                 os.path.split(dataDirPath)[1],
                 os.path.splitext(imageName)[0]
                 )
-            logger.debug("[DeepZoomWrapper] Successfully sent to minio server")
+            logger.debug("Successfully sent to minio server")
 
-            logger.debug("[DeepZoomWrapper] Copying files to frontend/public/")
+            logger.debug("Copying files to frontend/public/")
             try:
                 shutil.copytree(
                     os.path.split(dataDirPath)[0],
@@ -188,19 +188,19 @@ recursively to minio server, starting from " +
                 logger.debug("[DeepZeeomWrapper] Successfully copied files")
 
             except Exception as e:
-                logger.debug("[DeepZoomWrapper] Error occured copying files: ")
-                logger.debug("[DeepZoomWrapper] " + e)
+                logger.debug("Error occured copying files: ")
+                logger.debug("" + e)
                 self.__imageQueue.pop()
 
-            logger.debug("[DeepZoomWrapper] Deleting temporary files")
+            logger.debug("Deleting temporary files")
             shutil.rmtree(os.path.split(dataDirPath)[0])
             shutil.rmtree('/code/imageuploader/image_tmp/source/' +
                           os.path.splitext(imageName)[0]
                           )
-            logger.debug("[DeepZoomWrapper] Successfully \
+            logger.debug("Successfully \
 deleted temporary files")
 
-            logger.debug("[DeepZoomWrapper] Start update db")
+            logger.debug("Start update db")
 
             try:
                 if (oid.objects.all().filter(bucket_name=bucketName)
@@ -226,28 +226,28 @@ deleted temporary files")
                         )
                         m_image.save()
 
-                        logger.debug("[DeepZoomWrapper] \
+                        logger.debug("\
 Deleting original image from db")
                         m_image2del = Image.objects.all() \
                             .filter(image_oid__bucket_name=bucketName) \
                             .filter(image_name=image.image_name).get()
                         m_image2del.delete()
 
-                        logger.debug("[DeepZoomWrapper] \
+                        logger.debug("\
 Deleting original image from minio")
                         minioClient.remove_object(bucketName, image.image_name)
-                        logger.debug("[DeepZoomWrapper] \
+                        logger.debug("\
 Successfully deleted unprocessed image")
 
             except Exception as e:
-                logger.debug("[Exception] at DeepZoomWrapper:183 " + e)
-                logger.debug("[DeepZoomWrapper] Object exists?")
+                logger.error("[Exception] at DeepZoomWrapper:183 " + e)
+                logger.error("Object exists?")
                 self.__imageQueue.pop()
 
-            logger.debug("[DeepZoomWrapper] Succesfully updated db")
+            logger.debug("Succesfully updated db")
 
         except ResponseError as err:
-            logger.debug("[ResponseError] at DeepZoomWrapper:190 " + err)
+            logger.error("[ResponseError] at DeepZoomWrapper:190 " + err)
             self.__imageQueue.pop()
 
         return
@@ -268,12 +268,12 @@ Successfully deleted unprocessed image")
                 filename = filename.replace(
                     directoryName, imageName + "_files")
 
-                logger.debug("[DeepZoomWrapper] Sending filename: " + filename)
+                # logger.debug("Sending filename: " + filename)
                 with open(path, 'rb') as file_data:
                     file_stat = os.stat(path)
                     minioClient.put_object(
                         bucketName, filename, file_data, file_stat.st_size)
-                    logger.debug("[DeepZoomWrapper] Sent file: " + filename)
+                    # logger.debug("Sent file: " + filename)
                     file_data.close()
 
             except Exception as e:
@@ -283,8 +283,7 @@ Successfully deleted unprocessed image")
         elif os.path.isdir(path):
             for content in os.listdir(path):
                 subPath = os.path.join(path, content)
-                logger.debug(
-                    "[DeepZoomWrapper] Entering sub directory: " + subPath)
+                # logger.debug("Entering sub directory: " + subPath)
                 self.uploadRecursively(minioClient,
                                        subPath,
                                        logger,
@@ -293,27 +292,28 @@ Successfully deleted unprocessed image")
                                        directoryName,
                                        imageName
                                        )
-                logger.debug("[DeepZoomWrapper] \
-Exiting to parent directory" + os.path.split(subPath)[0])
+#                 logger.debug("\
+# Exiting to parent directory" + os.path.split(subPath)[0])
 
     def handleImage(self, image, logger):
 
         start = time.time()
-        logger.debug('[DeepZoomWrapper] Started at: ' +
+        logger.debug('Started at: ' +
                      time.strftime("%H-%M-%S"))
         bucketName = image.image_oid.bucket_name
         objectName = image.image_name
-        logger.debug("[DeepZoomWrapper] bucketName: " +
+        logger.debug("bucketName: " +
                      bucketName + ", objectName: " + objectName)
 
-        logger.debug("[DeepZoomWrapper] Entering imageFetcher at: " +
+        logger.debug("Entering imageFetcher at: " +
                      time.strftime("%H-%M-%S"))
         imagePath = self.imageFetcher(bucketName, objectName, logger)
-        logger.debug("[DeepZoomWrapper] Fetched image path: " + imagePath)
+        logger.debug("Fetched image path: " + imagePath)
 
-        logger.debug("[DeepZoomWrapper] Entering imageTiler at: " +
+        logger.debug("Entering imageTiler at: " +
                      time.strftime("%H-%M-%S"))
         imagePath_processed = self.imageTiler(imagePath, logger)
+        logger.info("Processing image finished.")
         elapsed = time.time() - start
 
         self.__imageQueue.pop()
@@ -328,12 +328,12 @@ Exiting to parent directory" + os.path.split(subPath)[0])
 
             # attatch logging module
             logger = logging.getLogger(name=image.image_name)
-            logger.setLevel(logging.DEBUG)
-            ch = logging.StreamHandler()
-            ch.setLevel(logging.DEBUG)
-            formatter = logging.Formatter('%(message)s')
-            ch.setFormatter(formatter)
-            logger.addHandler(ch)
+            # logger.setLevel(logging.DEBUG)
+            # ch = logging.StreamHandler()
+            # ch.setLevel(logging.DEBUG)
+            # formatter = logging.Formatter('%(message)s')
+            # ch.setFormatter(formatter)
+            # logger.addHandler(ch)
 
             # creating thread
             logger.debug("Creating thread..")
@@ -348,7 +348,7 @@ Exiting to parent directory" + os.path.split(subPath)[0])
         while threads:
             elapsed = time.time() - start
             if (elapsed % 5 == 0):
-                logger.debug("[DeepZoomWrapper] \
+                logger.debug("\
 processing " + len(threads) + "images for " + elapsed + " seconds.")
 
             for name, thread in threads:

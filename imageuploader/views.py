@@ -14,6 +14,9 @@ from minio import Minio
 from minio.error import (ResponseError, BucketAlreadyOwnedByYou,
                          BucketAlreadyExists)
 from .DeepZoomWrapper import DeepZoomWrapper
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class UploadeHandler(APIView):
@@ -48,7 +51,7 @@ class UploadeHandler(APIView):
 
                 except ResponseError as err:
 
-                    print(err)
+                    logger.error(err)
                     msg = err
                     url = ""
                     m_status = status.HTTP_403_FORBIDDEN
@@ -72,21 +75,21 @@ class UploadeHandler(APIView):
 
                     except ResponseError as err:
 
-                        print(err)
+                        logger.error(err)
                         msg += err
                         url = ""
                         m_status = status.HTTP_403_FORBIDDEN
 
                 except ResponseError as err:
 
-                    print(err)
+                    logger.error(err)
                     m_status = status.HTTP_404_NOT_FOUND
                     url = ''
                     msg = ''
 
         except ResponseError as err:
 
-            print(err)
+            logger.error(err)
             m_status = status.HTTP_404_NOT_FOUND
             url = ''
             msg = ''
@@ -187,9 +190,9 @@ class UploadeHandler(APIView):
 
                 except Exception as e:
 
-                    print(e)
+                    logger.error(e)
 
-                print('image saved')
+                logger.info('image saved')
 
                 try:
 
@@ -201,11 +204,11 @@ class UploadeHandler(APIView):
 
                 except Exception as e:
 
-                    print(e)
+                    logger.error(e)
 
         except Exception as e:
 
-            print(e)
+            logger.error(e)
             m_status = status.HTTP_406_NOT_ACCEPTABLE
             msg = "Failed inserting DB"
             data = {

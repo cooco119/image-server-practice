@@ -14,6 +14,9 @@ from minio import Minio
 from minio.error import (ResponseError, BucketAlreadyOwnedByYou,
                          BucketAlreadyExists)
 import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class GetWorkspaces(APIView):
