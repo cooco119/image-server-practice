@@ -16,7 +16,7 @@ from minio.error import (ResponseError, BucketAlreadyOwnedByYou,
 import datetime
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("imageviewer")
 
 
 class GetWorkspaces(APIView):
