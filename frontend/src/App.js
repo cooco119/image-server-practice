@@ -376,7 +376,7 @@ class App extends Component {
           offset += e.target.result.length;
           this.setState({readingProgress: offset*100/f.size});
           let blob = f.slice(offset, offset + CHUNK_SIZE);
-          reader.readAsBinaryString(blob);
+          reader.readAsDataURL(blob);
         }
         else {
           let result = chunks.join("");
@@ -401,8 +401,8 @@ class App extends Component {
         }
       }
       let blob = f.slice(offset, offset + CHUNK_SIZE);
-      // reader.readAsDataURL(blob);
-      reader.readAsBinaryString(blob);
+      reader.readAsDataURL(blob);
+      // reader.readAsBinaryString(blob);
       
       // Upload to Minio server
       
