@@ -14,6 +14,7 @@ import base64
 import time
 import logging
 import shutil
+import openslide
 
 
 # Singleton class #
@@ -105,7 +106,7 @@ image data from minio server")
         except ResponseError as err:
             logger.error(err)
 
-    def imageTiler(self, imagePath, logger):
+    def imageTilerDeepZoom(self, imagePath, logger):
 
         creator = deepzoom.ImageCreator(tile_size=128,
                                         tile_overlap=2,
@@ -126,6 +127,59 @@ image data from minio server")
         logger.debug("Result path: " + res_path)
         logger.debug("Entering deepzoom api")
         creator.create(imagePath, res_path, logger)
+
+        return res_path
+
+    def imageTilerOpenSlide(self, imagePath, logger):
+        SLIDE_CACHE_SIZE = 10
+        DEEPZOOM_FORMAT = 'png'
+        DEEPZOOM_TILE_SIZE = 254
+        DEEPZOOM_OVERLAP = 1
+        DEEPZOOM_LIMIT_BOUNDS = True
+        DEEPZOOM_TILE_QUALITY = 75
+
+        filename = os.path.split(imagePath)[1]
+        filename = os.path.splitext(filename)[0] + '.dzi'
+        res_path = os.path.join(os.getcwd(),
+                                'imageuploader',
+                                'image_tmp',
+                                'processed',
+                                os.path.splitext(filename)[0],
+                                filename
+                                )
+        tile_dir_path = os.path.join(os.getcwd(),
+                                     'imageuploader',
+                                     'image_tmp',
+                                     'processed',
+                                     os.path.splitext(filename)[0],
+                                     os.path.splitext(filename)[0] + "_files")
+
+        slide = openslide.OpenSlide(imagePath)
+        dzi = openslide.deepzoom.DeepZoomGenerator(slide, limit_bounds=True)
+
+        if not os.path.exists(tile_dir_path):
+            os.makedirs(tile_dir_path)
+
+        # saving .dzi
+        with open(res_path, 'w') as dzi_file:
+            dzi_file.write(dzi.get_dzi())
+            dzi_file.close()
+
+        # saving tiles
+        levels = dzi.level_tiles
+        for level in range(len(levels)):
+            cols = levels[level][0]
+            rows = levels[level][1]
+            for col in range(cols):
+                for row in range(rows):
+                    path = os.path.join(
+                        tile_dir_path, str(level),
+                        str(col) + "_" + str(row) + ".png")
+                    tile = dzi.get_tile(level, (col, row))
+                    if not os.path.exists(os.path.split(path)[0]):
+                        os.makedirs(os.path.split(path)[0])
+                    open(path, 'a').close()
+                    tile.save(path)
 
         return res_path
 
@@ -183,8 +237,7 @@ recursively to minio server, starting from " +
             try:
                 shutil.copytree(
                     os.path.split(dataDirPath)[0],
-                    '/code/frontend_app/deepzoom/' + bucketName +
-                    '/' + os.path.splitext(imageName)[0])
+                    '/code/frontend_app/deepzoom/' + bucketName)
                 logger.debug("[DeepZeeomWrapper] Successfully copied files")
 
             except Exception as e:
@@ -312,7 +365,14 @@ Successfully deleted unprocessed image")
 
         logger.debug("Entering imageTiler at: " +
                      time.strftime("%H-%M-%S"))
-        imagePath_processed = self.imageTiler(imagePath, logger)
+
+        if (os.path.splitext(imagePath)[1].lower() in ["jpeg", "jpg", "png"]):
+            imagePath_processed = self.imageTilerDeepZoom(imagePath, logger)
+
+        elif (os.path.splitext(imagePath)[1].lower()
+              in ["svs", ".tif", "tiff"]):
+            imagePath_processed = self.imageTilerOpenSlide(imagePath, logger)
+
         logger.info("Processing image finished.")
         elapsed = time.time() - start
 
