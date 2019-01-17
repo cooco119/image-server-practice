@@ -16,7 +16,7 @@ from minio.error import (ResponseError, BucketAlreadyOwnedByYou,
 from .DeepZoomWrapper import DeepZoomWrapper
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("imageuploader")
 
 
 class UploadeHandler(APIView):
