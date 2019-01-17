@@ -376,13 +376,13 @@ class App extends Component {
           offset += e.target.result.length;
           this.setState({readingProgress: offset*100/f.size});
           let blob = f.slice(offset, offset + CHUNK_SIZE);
-          reader.readAsDataURL(blob);
+          reader.readAsBinaryString(blob);
         }
         else {
           let result = chunks.join("");
           console.log(result);
           let prefix = "data:application/octet-stream;base64,"
-          result = prefix + result;
+          // result = prefix + result;
           console.log(result);
           this.setState({readImgRes: result});
           console.log("Done reading file");
