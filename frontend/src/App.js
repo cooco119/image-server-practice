@@ -371,7 +371,7 @@ class App extends Component {
       let offset = 0;
       this.setState({uploadProgress: 0, readingProgress: 0});
 
-      reader.onloadend = async (e) => {
+      reader.onload = async (e) => {
         chunks.push(e.target.result);
         if (offset < f.size){
           offset += e.target.result.length;
@@ -397,7 +397,7 @@ class App extends Component {
         }
       }
       let blob = f.slice(offset, offset + CHUNK_SIZE);
-      reader.readAsDataURL(f);
+      reader.readAsDataURL(blob)
       
       // Upload to Minio server
       
