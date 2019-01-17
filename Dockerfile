@@ -8,6 +8,6 @@ ADD . /code/
 RUN mkdir /log
 RUN touch /log/django.log
 RUN apt-get update
-RUN apt-get install openslide-tools
+RUN apt-get install -y openslide-tools
 ENV http_proxy host:port
 ENV https_proxy host:port
