@@ -397,7 +397,8 @@ class App extends Component {
         }
       }
       let blob = f.slice(offset, offset + CHUNK_SIZE);
-      reader.readAsDataURL(blob);
+      // reader.readAsDataURL(blob);
+      reader.readAsBinaryString(blob);
       
       // Upload to Minio server
       
