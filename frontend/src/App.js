@@ -380,6 +380,10 @@ class App extends Component {
         }
         else {
           let result = chunks.join("");
+          console.log(result);
+          let prefix = "data:application/octet-stream;base64,"
+          result = prefix + result;
+          console.log(result);
           this.setState({readImgRes: result});
           console.log("Done reading file");
           this.setState({readingProgress: 100});
