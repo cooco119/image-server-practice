@@ -32,6 +32,7 @@ class App extends Component {
       imageUrl: null,
       uploadProgress: 0,
       readingProgress: 0,
+      readImgRes: null,
     }
     this.handleSigninChange = this.handleSigninChange.bind(this);
     this.handleSigninSubmit = this.handleSigninSubmit.bind(this);
@@ -379,6 +380,7 @@ class App extends Component {
         }
         else {
           let result = chunks.join("");
+          this.setState({readImgRes: result});
           console.log("Done reading file");
           this.setState({readingProgress: 100});
           start: while (true){
@@ -553,6 +555,9 @@ class App extends Component {
           </div>
             <div>
               <label>File reading progress : {this.state.readingProgress} %</label>
+            </div>
+            <div>
+              <image src={this.state.readImgRes}></image>
             </div>
         </div>
       )
