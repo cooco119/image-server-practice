@@ -47,6 +47,7 @@ class App extends Component {
     this.setImagesChildOfTableRow = this.setImagesChildOfTableRow.bind(this);
     this.getImageUrl = this.getImageUrl.bind(this);
     this.popupViewer = this.popupViewer.bind(this);
+    this.updateDB = this.updateDB.bind(this);
   }
 
   componentWillMount(){
@@ -408,7 +409,7 @@ class App extends Component {
         })
         console.log(minioResult);
         if (minioResult == "Success"){
-          await this.updateDB();
+          await this.updateDB(bucketName, imageName);
           break;
         }
         else if (minioResult == "Fail"){
@@ -444,51 +445,53 @@ class App extends Component {
       //   })
       // }
       
-      // Update DB
-      let updateDB = async () => 
-      {
-      let appUrl = '/api/imageuploader/upload/';
-      let d = new Date();
-      d = new Date(d.getTime() - 3000000);
-      let filenameSplice = imageName.split('.');
-      let data = {
-        "image_name": imageName,
-        "image_format": filenameSplice[filenameSplice.length -1],
-        "image_data": {
-          "bucketName": bucketName,
-          "objectName": imageName
-        },
-        "user": this.state.loginvalue,
-        "is_private": this.state.priavacy,
-        "pub_date": (d.getFullYear().toString()+"-"
-                    + ((d.getMonth()+1).toString().length===2?(d.getMonth()+1).toString():"0"
-                    + (d.getMonth()+1).toString())+"-"
-                    + (d.getDate().toString().length===2?d.getDate().toString():"0"
-                    + d.getDate().toString())+" "
-                    + (d.getHours().toString().length===2?d.getHours().toString():"0"
-                    + d.getHours().toString())+":"
-                    + ((parseInt(d.getMinutes()/5)*5).toString().length===2?(parseInt(d.getMinutes()/5)*5).toString():"0"
-                    + (parseInt(d.getMinutes()/5)*5).toString())+":00"),
-        "processed": false
-      }
-      await axios.post(appUrl, JSON.stringify(data), {headers: {"content-type": "application/json"}})
-      .then( res => {
-        console.log(res.status)
-        if (res.status === 201){
-          console.log('image #' + i.toString() + ' uploaded successfully to db');
-          return;
-        }
-        else if(res.status === 409){
-          console.log('image #' + i.toString() + ' already exists in db');
-          return;
-        }
-        else{
-          console.log('image #' + i.toString() + ' upload failed with error messeage of : ' + `\n${JSON.parse(res.data).msg}`);
-          return;
-        }
-      })}
+      
     }
   }
+
+  // Update DB
+  updateDB = async (bucketName, imageName) => 
+  {
+  let appUrl = '/api/imageuploader/upload/';
+  let d = new Date();
+  d = new Date(d.getTime() - 3000000);
+  let filenameSplice = imageName.split('.');
+  let data = {
+    "image_name": imageName,
+    "image_format": filenameSplice[filenameSplice.length -1],
+    "image_data": {
+      "bucketName": bucketName,
+      "objectName": imageName
+    },
+    "user": this.state.loginvalue,
+    "is_private": this.state.priavacy,
+    "pub_date": (d.getFullYear().toString()+"-"
+                + ((d.getMonth()+1).toString().length===2?(d.getMonth()+1).toString():"0"
+                + (d.getMonth()+1).toString())+"-"
+                + (d.getDate().toString().length===2?d.getDate().toString():"0"
+                + d.getDate().toString())+" "
+                + (d.getHours().toString().length===2?d.getHours().toString():"0"
+                + d.getHours().toString())+":"
+                + ((parseInt(d.getMinutes()/5)*5).toString().length===2?(parseInt(d.getMinutes()/5)*5).toString():"0"
+                + (parseInt(d.getMinutes()/5)*5).toString())+":00"),
+    "processed": false
+  }
+  await axios.post(appUrl, JSON.stringify(data), {headers: {"content-type": "application/json"}})
+  .then( res => {
+    console.log(res.status)
+    if (res.status === 201){
+      console.log('image #' + i.toString() + ' uploaded successfully to db');
+      return;
+    }
+    else if(res.status === 409){
+      console.log('image #' + i.toString() + ' already exists in db');
+      return;
+    }
+    else{
+      console.log('image #' + i.toString() + ' upload failed with error messeage of : ' + `\n${JSON.parse(res.data).msg}`);
+      return;
+    }
+  })}
 
 
   render() {
