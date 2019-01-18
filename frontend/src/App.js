@@ -387,17 +387,17 @@ class App extends Component {
       //     this.setState({readImgRes: result});
       //     console.log("Done reading file");
       //     this.setState({readingProgress: 100});
-      //     start: while (true){
-      //       let minioResult = await sendFile(result);
-      //       console.log(minioResult);
-      //       if (minioResult == "Success"){
-      //         await updateDB();
-      //         break;
-      //       }
-      //       else if (minioResult == "Fail"){
-      //         continue start
-      //       }
-      //     }
+      start: while (true){
+        let minioResult = await sendFile(result);
+        console.log(minioResult);
+        if (minioResult == "Success"){
+          await updateDB();
+          break;
+        }
+        else if (minioResult == "Fail"){
+          continue start
+        }
+      }
       //   }
       // }
       // let blob = f.slice(offset, offset + CHUNK_SIZE);
@@ -405,8 +405,6 @@ class App extends Component {
       // reader.readAsBinaryString(blob);
       
       // Upload to Minio server
-      
-      sendFile(f)
 
       let sendFile = async (result) => {
         console.log(result);
