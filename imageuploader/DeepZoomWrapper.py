@@ -163,7 +163,7 @@ image data from minio server")
 
         # saving .dzi
         with open(res_path, 'w') as dzi_file:
-            dzi_file.write(dzi.get_dzi())
+            dzi_file.write(dzi.get_dzi("png"))
             dzi_file.close()
 
         # saving tiles
