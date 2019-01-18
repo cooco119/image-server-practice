@@ -388,7 +388,24 @@ class App extends Component {
       //     console.log("Done reading file");
       //     this.setState({readingProgress: 100});
       start: while (true){
-        let minioResult = await sendFile(f);
+        // let minioResult = await sendFile(f);
+        let minioResult = await axios.put(url, f, {
+          onUploadProgress: progress => {
+            this.setState({uploadProgress: progress.loaded / progress.total})
+          }
+        })
+        .then((res) => {
+          console.log(res)
+          if (res.status !== 200){
+            console.error('image put failed')
+            return "Fail";
+          }
+          else{
+            console.log('image #' + i.toString() + ' upload successful');
+            this.setState({uploadProgress: 1});
+            return "Success";
+          }
+        })
         console.log(minioResult);
         if (minioResult == "Success"){
           await updateDB();
@@ -406,26 +423,26 @@ class App extends Component {
       
       // Upload to Minio server
 
-      let sendFile = async (result) => {
-        console.log(result);
-        return await axios.put(url, result, {
-          onUploadProgress: progress => {
-            this.setState({uploadProgress: progress.loaded / progress.total})
-          }
-        })
-        .then((res) => {
-          console.log(res)
-          if (res.status !== 200){
-            console.error('image put failed')
-            return "Fail";
-          }
-          else{
-            console.log('image #' + i.toString() + ' upload successful');
-            this.setState({uploadProgress: 1});
-            return "Success";
-          }
-        })
-      }
+      // let sendFile = async (result) => {
+      //   console.log(result);
+      //   return await axios.put(url, result, {
+      //     onUploadProgress: progress => {
+      //       this.setState({uploadProgress: progress.loaded / progress.total})
+      //     }
+      //   })
+      //   .then((res) => {
+      //     console.log(res)
+      //     if (res.status !== 200){
+      //       console.error('image put failed')
+      //       return "Fail";
+      //     }
+      //     else{
+      //       console.log('image #' + i.toString() + ' upload successful');
+      //       this.setState({uploadProgress: 1});
+      //       return "Success";
+      //     }
+      //   })
+      // }
       
       // Update DB
       let updateDB = async () => 
