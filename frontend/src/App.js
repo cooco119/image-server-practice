@@ -230,7 +230,7 @@ class App extends Component {
       let public_url = process.env.PUBLIC_URL;
       console.log(public_url);
       let dzi_name = imageName.substr(0, imageName.lastIndexOf('.')) + '.dzi';
-      let dzi_path = ('http://192.168.0.162:8000/front' + '/' + bucketName + '/' +  imageName.substr(0, imageName.lastIndexOf('.')) + dzi_name) + '/' + dzi_name;
+      let dzi_path = ('http://192.168.0.162:8000/front' + '/' + bucketName + '/' +  imageName.substr(0, imageName.lastIndexOf('.'))) + '/' + dzi_name;
       console.log(dzi_path);
       viewerWindow.document.write('\
       <div id="openseadragon1" style="width: 1280px; height: 960px;"></div>\n\
