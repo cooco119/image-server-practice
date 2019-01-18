@@ -15,6 +15,7 @@ import time
 import logging
 import shutil
 import openslide
+from openslide import deepzoom
 
 
 # Singleton class #
@@ -76,7 +77,7 @@ image data from minio server")
         while not exists:
             try:
                 logger.debug("Trying to connect..")
-                data = minioClient.get_object(bucketName, objectName)
+                data = minioClient.fget_object(bucketName, objectName, imagePath)
 
             except:
                 time.sleep(0.5)
@@ -87,21 +88,21 @@ image data from minio server")
         try:
 
             logger.debug("Image get successful.")
-            logger.debug("Start writing image file..")
+            # logger.debug("Start writing image file..")
 
-            with open(imagePath, 'wb+') as file_data:
-                for d in data.stream(32*1024):
-                    if imageData is None:
-                        imageData = d.split(','.encode('utf-8'))[1]
-                    else:
-                        imageData += d
+            # with open(imagePath, 'wb+') as file_data:
+            #     for d in data.stream(32*1024):
+            #         if imageData is None:
+            #             imageData = d.split(','.encode('utf-8'))[1]
+            #         else:
+            #             imageData += d
 
-                imageFileData = base64.b64decode(imageData)
-                file_data.write(imageFileData)
-                file_data.close()
-                logger.debug("Successfully wrote image file")
+            #     imageFileData = base64.b64decode(imageData)
+            #     file_data.write(imageFileData)
+            #     file_data.close()
+            #     logger.debug("Successfully wrote image file")
 
-                return imagePath
+            return imagePath
 
         except ResponseError as err:
             logger.error(err)
@@ -155,14 +156,14 @@ image data from minio server")
                                      os.path.splitext(filename)[0] + "_files")
 
         slide = openslide.OpenSlide(imagePath)
-        dzi = openslide.deepzoom.DeepZoomGenerator(slide, limit_bounds=True)
+        dzi = deepzoom.DeepZoomGenerator(slide, limit_bounds=True)
 
         if not os.path.exists(tile_dir_path):
             os.makedirs(tile_dir_path)
 
         # saving .dzi
         with open(res_path, 'w') as dzi_file:
-            dzi_file.write(dzi.get_dzi())
+            dzi_file.write(dzi.get_dzi("png"))
             dzi_file.close()
 
         # saving tiles
