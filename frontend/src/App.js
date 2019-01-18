@@ -365,50 +365,56 @@ class App extends Component {
 
       /// Read image file
 
-      let CHUNK_SIZE = 1024 * 1024;
-      let chunks = [];
-      let offset = 0;
-      this.setState({uploadProgress: 0, readingProgress: 0});
+      // let CHUNK_SIZE = 1024 * 10;
+      // let chunks = [];
+      // let offset = 0;
+      // this.setState({uploadProgress: 0, readingProgress: 0});
 
-      reader.onload = async (e) => {
-        chunks.push(e.target.result);
-        if (offset < f.size){
-          offset += e.target.result.length;
-          this.setState({readingProgress: offset*100/f.size});
-          let blob = f.slice(offset, offset + CHUNK_SIZE);
-          reader.readAsDataURL(blob);
-        }
-        else {
-          let result = chunks.join("");
-          console.log(result);
-          let prefix = "data:application/octet-stream;base64,"
-          // result = prefix + result;
-          console.log(result);
-          this.setState({readImgRes: result});
-          console.log("Done reading file");
-          this.setState({readingProgress: 100});
-          start: while (true){
-            let minioResult = await sendFile(result);
-            console.log(minioResult);
-            if (minioResult == "Success"){
-              await updateDB();
-              break;
-            }
-            else if (minioResult == "Fail"){
-              continue start
-            }
-          }
-        }
-      }
-      let blob = f.slice(offset, offset + CHUNK_SIZE);
-      reader.readAsDataURL(blob);
+      // reader.onload = async (e) => {
+      //   chunks.push(e.target.result);
+      //   if (offset < f.size){
+      //     offset += e.target.result.length;
+      //     this.setState({readingProgress: offset*100/f.size});
+      //     let blob = f.slice(offset, offset + CHUNK_SIZE);
+      //     reader.readAsDataURL(blob);
+      //   }
+      //   else {
+      //     let result = chunks.join("");
+      //     console.log(result);
+      //     let prefix = "data:application/octet-stream;base64,"
+      //     // result = prefix + result;
+      //     console.log(result);
+      //     this.setState({readImgRes: result});
+      //     console.log("Done reading file");
+      //     this.setState({readingProgress: 100});
+      //     start: while (true){
+      //       let minioResult = await sendFile(result);
+      //       console.log(minioResult);
+      //       if (minioResult == "Success"){
+      //         await updateDB();
+      //         break;
+      //       }
+      //       else if (minioResult == "Fail"){
+      //         continue start
+      //       }
+      //     }
+      //   }
+      // }
+      // let blob = f.slice(offset, offset + CHUNK_SIZE);
+      // reader.readAsDataURL(blob);
       // reader.readAsBinaryString(blob);
       
       // Upload to Minio server
       
+      sendFile(f)
+
       let sendFile = async (result) => {
         console.log(result);
-        return await axios.put(url, result)
+        return await axios.put(url, result, {
+          onUploadProgress: progress => {
+            this.setState({uploadProgress: progress.loaded / progress.total})
+          }
+        })
         .then((res) => {
           console.log(res)
           if (res.status !== 200){
@@ -559,7 +565,7 @@ class App extends Component {
             <button style={{padding: 10, textAlign: 'center'}} onClick={this.upload}>Upload</button>
           </div>
             <div>
-              <label>File reading progress : {this.state.readingProgress} %</label>
+              <label>Uploading progress : {this.state.readingProgress} %</label>
             </div>
             <div>
               <image src={this.state.readImgRes}></image>
