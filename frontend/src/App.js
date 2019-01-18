@@ -409,7 +409,7 @@ class App extends Component {
         })
         console.log(minioResult);
         if (minioResult == "Success"){
-          await this.updateDB(bucketName, imageName);
+          await this.updateDB(bucketName, imageName, i);
           break;
         }
         else if (minioResult == "Fail"){
@@ -450,7 +450,7 @@ class App extends Component {
   }
 
   // Update DB
-  updateDB = async (bucketName, imageName) => 
+  updateDB = async (bucketName, imageName, i) => 
   {
   let appUrl = '/api/imageuploader/upload/';
   let d = new Date();
