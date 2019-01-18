@@ -238,7 +238,7 @@ recursively to minio server, starting from " +
                 shutil.copytree(
                     os.path.split(dataDirPath)[0],
                     '/code/frontend_app/deepzoom/' + bucketName +
-                    '/' + imageName)
+                    '/' + os.path.splitext(imageName)[0])
                 logger.debug("[DeepZeeomWrapper] Successfully copied files")
 
             except Exception as e:
