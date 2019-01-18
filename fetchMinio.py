@@ -60,7 +60,7 @@ def setQueueAndStart():
                 m_thread.start()
                 threadList.append(m_thread)
                 numThreads += 1
-            logger.info("Running thread list: ")
+            writeStatus(threadList)
         for i in range(len(threadList)):
             thread = threadList[i]
             try:
