@@ -408,7 +408,7 @@ class App extends Component {
         })
         console.log(minioResult);
         if (minioResult == "Success"){
-          await updateDB();
+          await this.updateDB();
           break;
         }
         else if (minioResult == "Fail"){
