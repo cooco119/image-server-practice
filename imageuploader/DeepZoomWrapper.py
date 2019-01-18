@@ -15,6 +15,7 @@ import time
 import logging
 import shutil
 import openslide
+from openslide import deepzoom
 
 
 # Singleton class #
@@ -155,7 +156,7 @@ image data from minio server")
                                      os.path.splitext(filename)[0] + "_files")
 
         slide = openslide.OpenSlide(imagePath)
-        dzi = openslide.deepzoom.DeepZoomGenerator(slide, limit_bounds=True)
+        dzi = deepzoom.DeepZoomGenerator(slide, limit_bounds=True)
 
         if not os.path.exists(tile_dir_path):
             os.makedirs(tile_dir_path)
