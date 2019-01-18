@@ -388,7 +388,7 @@ class App extends Component {
       //     console.log("Done reading file");
       //     this.setState({readingProgress: 100});
       start: while (true){
-        let minioResult = await sendFile(result);
+        let minioResult = await sendFile(f);
         console.log(minioResult);
         if (minioResult == "Success"){
           await updateDB();
