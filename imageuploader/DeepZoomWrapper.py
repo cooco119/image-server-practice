@@ -237,12 +237,13 @@ recursively to minio server, starting from " +
             try:
                 shutil.copytree(
                     os.path.split(dataDirPath)[0],
-                    '/code/frontend_app/deepzoom/' + bucketName)
+                    '/code/frontend_app/deepzoom/' + bucketName +
+                    '/' + imageName)
                 logger.debug("[DeepZeeomWrapper] Successfully copied files")
 
             except Exception as e:
                 logger.debug("Error occured copying files: ")
-                logger.debug("" + e)
+                logger.debug("" + str(e))
                 self.__imageQueue.pop()
 
             logger.debug("Deleting temporary files")
