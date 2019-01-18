@@ -57,6 +57,9 @@ import json
 
 from collections import deque
 
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 PIL.Image.MAX_IMAGE_PIXELS = 1000000000
 NS_DEEPZOOM = 'http://schemas.microsoft.com/deepzoom/2008'
 
