@@ -71,7 +71,7 @@ def setQueueAndStart():
                 threadList.pop(idx)
             threadIdxToBePoped = []
         except Exception as e:
-            logger.Error(e)
+            logger.error(e)
 
         if len(threadList) == 0:
             return
