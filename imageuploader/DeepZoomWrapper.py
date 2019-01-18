@@ -76,7 +76,7 @@ image data from minio server")
         while not exists:
             try:
                 logger.debug("Trying to connect..")
-                data = minioClient.get_object(bucketName, objectName)
+                data = minioClient.fget_object(bucketName, objectName, imagePath)
 
             except:
                 time.sleep(0.5)
@@ -87,19 +87,19 @@ image data from minio server")
         try:
 
             logger.debug("Image get successful.")
-            logger.debug("Start writing image file..")
+            # logger.debug("Start writing image file..")
 
-            with open(imagePath, 'wb+') as file_data:
-                for d in data.stream(32*1024):
-                    if imageData is None:
-                        imageData = d.split(','.encode('utf-8'))[1]
-                    else:
-                        imageData += d
+            # with open(imagePath, 'wb+') as file_data:
+            #     for d in data.stream(32*1024):
+            #         if imageData is None:
+            #             imageData = d.split(','.encode('utf-8'))[1]
+            #         else:
+            #             imageData += d
 
-                imageFileData = base64.b64decode(imageData)
-                file_data.write(imageFileData)
-                file_data.close()
-                logger.debug("Successfully wrote image file")
+            #     imageFileData = base64.b64decode(imageData)
+            #     file_data.write(imageFileData)
+            #     file_data.close()
+            #     logger.debug("Successfully wrote image file")
 
                 return imagePath
 
