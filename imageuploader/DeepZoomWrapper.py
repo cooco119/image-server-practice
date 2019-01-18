@@ -101,7 +101,7 @@ image data from minio server")
             #     file_data.close()
             #     logger.debug("Successfully wrote image file")
 
-                return imagePath
+            return imagePath
 
         except ResponseError as err:
             logger.error(err)
