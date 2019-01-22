@@ -238,8 +238,7 @@ recursively to minio server, starting from " +
             try:
                 shutil.copytree(
                     os.path.split(dataDirPath)[0],
-                    '/code/frontend_app/deepzoom/' + bucketName +
-                    '/' + os.path.splitext(imageName)[0])
+                    '/code/frontend_app/deepzoom/' + bucketName)
                 logger.debug("[DeepZeeomWrapper] Successfully copied files")
 
             except Exception as e:
@@ -352,36 +351,49 @@ Successfully deleted unprocessed image")
 
     def handleImage(self, image, logger):
 
-        start = time.time()
-        logger.debug('Started at: ' +
-                     time.strftime("%H-%M-%S"))
-        bucketName = image.image_oid.bucket_name
-        objectName = image.image_name
-        logger.debug("bucketName: " +
-                     bucketName + ", objectName: " + objectName)
+    
+        try:
+            start = datetime.datetime.time()
+            logger.debug('Started at: ' +
+                         time.strftime("%H-%M-%S"))
+            bucketName = image.image_oid.bucket_name
+            objectName = image.image_name
+            logger.debug("bucketName: " +
+                         bucketName + ", objectName: " + objectName)
 
-        logger.debug("Entering imageFetcher at: " +
-                     time.strftime("%H-%M-%S"))
-        imagePath = self.imageFetcher(bucketName, objectName, logger)
-        logger.debug("Fetched image path: " + imagePath)
+            logger.debug("Entering imageFetcher at: " +
+                         time.strftime("%H-%M-%S"))
+            imagePath = self.imageFetcher(bucketName, objectName, logger)
+            logger.debug("Fetched image path: " + imagePath)
 
-        logger.debug("Entering imageTiler at: " +
-                     time.strftime("%H-%M-%S"))
-        logger.info("File extension: " +
-                    os.path.splitext(imagePath)[1].lower())
-        if (os.path.splitext(imagePath)[1].lower() in [".jpeg", ".jpg", ".png"]):
-            imagePath_processed = self.imageTilerDeepZoom(imagePath, logger)
+            logger.debug("Entering imageTiler at: " +
+                         time.strftime("%H-%M-%S"))
 
-        elif (os.path.splitext(imagePath)[1].lower()
-              in [".svs", ".tif", ".tiff"]):
-            imagePath_processed = self.imageTilerOpenSlide(imagePath, logger)
+            if (os.path.splitext(imagePath)[1].lower() 
+                    in ["jpeg", "jpg", "png"]):
+                imagePath_processed = self.imageTilerDeepZoom(imagePath,
+                                                              logger)
 
-        logger.info("Processing image finished.")
-        elapsed = time.time() - start
+            elif (os.path.splitext(imagePath)[1].lower()
+                    in ["svs", ".tif", "tiff"]):
+                imagePath_processed = self.imageTilerOpenSlide(imagePath,
+                                                               logger)
 
-        self.__imageQueue.pop()
+            self.updateImage(image, imagePath_processed, logger)
+            logger.info("Processing image finished.")
+            elapsed = datetime.datetime.time() - start
+            ms = elapsed / datetime.timedelta(milliseconds=1)
+            logger.info("Processing took " + str(ms) + " ms.")
 
-        return self.updateImage(image, imagePath_processed, logger)
+            self.__imageQueue.pop()
+            return
+
+        except Exception as e:
+            self.__imageQueue.pop()
+            logger.error("Exception occured handling image.")
+            logger.error(e)
+
+        return
 
     def process(self):
 
@@ -391,12 +403,6 @@ Successfully deleted unprocessed image")
 
             # attatch logging module
             logger = logging.getLogger(name=image.image_name)
-            # logger.setLevel(logging.DEBUG)
-            # ch = logging.StreamHandler()
-            # ch.setLevel(logging.DEBUG)
-            # formatter = logging.Formatter('%(message)s')
-            # ch.setFormatter(formatter)
-            # logger.addHandler(ch)
 
             # creating thread
             logger.debug("Creating thread..")

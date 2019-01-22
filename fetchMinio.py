@@ -39,11 +39,16 @@ def setQueueAndStart():
     buckets = minioClient.list_buckets()
     for bucket in buckets:
         queue.put(bucket)
+    print("Start pulling from minio")
 
     numThreads = 0
     MAX_THREAD_NUMBER = 4
     threadList = []
     threadIdxToBePoped = []
+    threadStr = ""
+    for i in range(len(threadList)):
+        threadStr += threadList[i].name + " "
+    print('Thread List: ' + threadStr)
     while True:
         if numThreads < MAX_THREAD_NUMBER and not queue.empty():
             for i in range(MAX_THREAD_NUMBER - numThreads - 1):
@@ -51,6 +56,7 @@ def setQueueAndStart():
                 m_thread = Thread(target=fetch,
                                   name=m_bucket.name,
                                   args=(m_bucket, ))
+                print("Start pulling " + m_bucket.name)
                 m_thread.start()
                 threadList.append(m_thread)
                 numThreads += 1
@@ -82,5 +88,12 @@ def startInNewProcess():
     print('PID: ', os.getpid())
     setQueueAndStart()
 
+
+def writeStatus(threadList):
+    print('\r')
+    threadStr = ""
+    for i in range(len(threadList)):
+        threadStr += threadList[i].name + " "
+    print('Thread List: ' + threadStr)
 if __name__ == "__main__":
     setQueueAndStart()
