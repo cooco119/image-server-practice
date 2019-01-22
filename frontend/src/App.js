@@ -464,7 +464,7 @@ class App extends Component {
       "objectName": imageName
     },
     "user": this.state.loginvalue,
-    "is_private": this.state.priavacy,
+    "is_private": this.state.priavacy ? "True" : "False",
     "pub_date": (d.getFullYear().toString()+"-"
                 + ((d.getMonth()+1).toString().length===2?(d.getMonth()+1).toString():"0"
                 + (d.getMonth()+1).toString())+"-"
