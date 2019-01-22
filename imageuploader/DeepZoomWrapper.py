@@ -369,12 +369,12 @@ Successfully deleted unprocessed image")
                          time.strftime("%H-%M-%S"))
 
             if (os.path.splitext(imagePath)[1].lower() 
-                    in ["jpeg", "jpg", "png"]):
+                    in [".jpeg", ".jpg", ".png"]):
                 imagePath_processed = self.imageTilerDeepZoom(imagePath,
                                                               logger)
 
             elif (os.path.splitext(imagePath)[1].lower()
-                    in ["svs", ".tif", "tiff"]):
+                    in [".svs", ".tif", ".tiff"]):
                 imagePath_processed = self.imageTilerOpenSlide(imagePath,
                                                                logger)
 
