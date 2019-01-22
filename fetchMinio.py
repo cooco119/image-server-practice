@@ -39,11 +39,16 @@ def setQueueAndStart():
     buckets = minioClient.list_buckets()
     for bucket in buckets:
         queue.put(bucket)
+    logger.info("Start pulling from minio")
 
     numThreads = 0
     MAX_THREAD_NUMBER = 4
     threadList = []
     threadIdxToBePoped = []
+    threadStr = ""
+    for i in range(len(threadList)):
+        threadStr += threadList[i].name + " "
+    logger.info('Thread List: ' + threadStr)
     while True:
         if numThreads < MAX_THREAD_NUMBER and not queue.empty():
             for i in range(MAX_THREAD_NUMBER - numThreads - 1):
@@ -55,7 +60,7 @@ def setQueueAndStart():
                 m_thread.start()
                 threadList.append(m_thread)
                 numThreads += 1
-
+            writeStatus(threadList)
         for i in range(len(threadList)):
             thread = threadList[i]
             try:
@@ -72,11 +77,16 @@ def setQueueAndStart():
                 threadList.pop(idx)
             threadIdxToBePoped = []
         except Exception as e:
-            logger.Error(e)
-
+            logger.error(e)
         if len(threadList) == 0:
             return
 
 
+def writeStatus(threadList):
+    logger.info('\r')
+    threadStr = ""
+    for i in range(len(threadList)):
+        threadStr += threadList[i].name + " "
+    logger.info('Thread List: ' + threadStr)
 if __name__ == "__main__":
     setQueueAndStart()
