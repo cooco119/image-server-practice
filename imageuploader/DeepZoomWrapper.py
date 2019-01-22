@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import deepzoom
+from . import deepzoom
 from threading import Thread
 from models.models import oid, Image, Users
 import requests
