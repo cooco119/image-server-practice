@@ -244,7 +244,6 @@ recursively to minio server, starting from " +
             except Exception as e:
                 logger.debug("Error occured copying files: ")
                 logger.debug("" + str(e))
-                self.__imageQueue.pop()
 
             logger.debug("Deleting temporary files")
             shutil.rmtree(os.path.split(dataDirPath)[0])
@@ -296,13 +295,11 @@ Successfully deleted unprocessed image")
             except Exception as e:
                 logger.error("[Exception] at DeepZoomWrapper:183 " + e)
                 logger.error("Object exists?")
-                self.__imageQueue.pop()
 
             logger.debug("Succesfully updated db")
 
         except ResponseError as err:
             logger.error("[ResponseError] at DeepZoomWrapper:190 " + err)
-            self.__imageQueue.pop()
 
         return
 
@@ -331,7 +328,6 @@ Successfully deleted unprocessed image")
                     file_data.close()
 
             except Exception as e:
-                self.__imageQueue.pop()
                 logger.debug(e)
 
         elif os.path.isdir(path):
