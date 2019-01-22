@@ -90,7 +90,6 @@ def setQueueAndStart():
 
 
 def writeStatus(threadList):
-    print('\r')
     threadStr = ""
     for i in range(len(threadList)):
         threadStr += threadList[i].name + " "
