@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 import os
 import sys
+from multiprocessing import Process
+import fetchMinio
 
 if __name__ == '__main__':
+    p = Process(target=fetchMinio.startInNewProcess, args=(,))
+    p.start()
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'image-server-practice.settings')
     try:
         from django.core.management import execute_from_command_line
