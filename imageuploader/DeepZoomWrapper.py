@@ -126,7 +126,7 @@ image data from minio server")
 
         logger.debug("Source path: " + imagePath)
         logger.debug("Result path: " + res_path)
-        logger.info("Entering deepzoom api")
+        # logger.info("Entering deepzoom api")
         creator.create(imagePath, res_path, logger)
 
         return res_path
@@ -363,6 +363,7 @@ Successfully deleted unprocessed image")
 
             logger.debug("Entering imageTiler at: " +
                          time.strftime("%H-%M-%S"))
+            logger.info("Start tiling the image")
 
             if (os.path.splitext(imagePath)[1].lower() 
                     in [".jpeg", ".jpg", ".png"]):
