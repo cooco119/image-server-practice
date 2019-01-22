@@ -51,11 +51,7 @@ def setQueueAndStart():
     print('Thread List: ' + threadStr)
     while True:
         if numThreads <= MAX_THREAD_NUMBER and not queue.empty():
-<<<<<<< HEAD
             for i in range(MAX_THREAD_NUMBER - numThreads):
-=======
-            for i in range(MAX_THREAD_NUMBER - numThreads - 1):
->>>>>>> origin/develop
                 m_bucket = queue.get()
                 m_thread = Thread(target=fetch,
                                   name=m_bucket.name,
