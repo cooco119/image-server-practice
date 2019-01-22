@@ -179,6 +179,11 @@ class UploadeHandler(APIView):
                             object_name=object_name)
                 m_oid.save()
 
+                if (is_private == "True"):
+                    is_private = True
+                else:
+                    is_private = False
+
                 m_image = Image(image_name=image_name, image_oid=m_oid,
                                 preview_url=preview_path, user=m_user,
                                 is_private=is_private, pub_date=pub_date,

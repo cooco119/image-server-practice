@@ -231,14 +231,14 @@ class App extends Component {
       let public_url = process.env.PUBLIC_URL;
       console.log(public_url);
       let dzi_name = imageName.substr(0, imageName.lastIndexOf('.')) + '.dzi';
-      let dzi_path = ('http://192.168.0.162:8000/front' + '/' + bucketName + '/' +  imageName.substr(0, imageName.lastIndexOf('.'))) + '/' + dzi_name;
+      let dzi_path = ('http://192.168.0.162:8000/front' + '/' + bucketName + '/' + dzi_name);
       console.log(dzi_path);
       viewerWindow.document.write('\
       <div id="openseadragon1" style="width: 1280px; height: 960px;"></div>\n\
       <script src="'+public_url+'/openseadragon.js"></script>\n\
       <script>var viewer = OpenSeadragon({ \
-        element: "openseadragon1", tileSources: "'+dzi_path+'", showNavigator: true \
-      })</script>');
+        element: "openseadragon1", tileSources: "'+dzi_path+'", showNavigator: true })\
+      </script>');
 
   }
 
@@ -464,7 +464,7 @@ class App extends Component {
       "objectName": imageName
     },
     "user": this.state.loginvalue,
-    "is_private": this.state.priavacy,
+    "is_private": this.state.priavacy ? "True" : "False",
     "pub_date": (d.getFullYear().toString()+"-"
                 + ((d.getMonth()+1).toString().length===2?(d.getMonth()+1).toString():"0"
                 + (d.getMonth()+1).toString())+"-"

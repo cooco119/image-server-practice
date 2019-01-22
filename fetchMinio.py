@@ -50,17 +50,18 @@ def setQueueAndStart():
         threadStr += threadList[i].name + " "
     print('Thread List: ' + threadStr)
     while True:
-        if numThreads < MAX_THREAD_NUMBER and not queue.empty():
+        if numThreads <= MAX_THREAD_NUMBER and not queue.empty():
             for i in range(MAX_THREAD_NUMBER - numThreads - 1):
                 m_bucket = queue.get()
                 m_thread = Thread(target=fetch,
                                   name=m_bucket.name,
                                   args=(m_bucket, ))
-                print("Start pulling " + m_bucket.name)
                 m_thread.start()
                 threadList.append(m_thread)
+                writeStatus(threadList)
+                print("Start pulling " + m_bucket.name)
                 numThreads += 1
-            writeStatus(threadList)
+            
         for i in range(len(threadList)):
             thread = threadList[i]
             try:
@@ -72,12 +73,18 @@ def setQueueAndStart():
                 finishedBucketName = thread.name
                 print("Successfully pulled " + finishedBucketName)
                 numThreads -= 1
-        try:
+
+        if threadIdxToBePoped:
+            threadIdxToBePoped.sort(reverse=True)
             for idx in threadIdxToBePoped:
-                threadList.pop(idx)
+                try:
+                    threadList.pop(idx)
+                    writeStatus(threadList)
+                except Exception as e:
+                    logger.error(e)
+                    threadIdxToBePoped.remove(idx)
             threadIdxToBePoped = []
-        except Exception as e:
-            logger.error(e)
+
         if len(threadList) == 0:
             return
 
