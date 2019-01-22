@@ -79,6 +79,7 @@ def setQueueAndStart():
             for idx in threadIdxToBePoped:
                 try:
                     threadList.pop(idx)
+                    writeStatus(threadList)
                 except Exception as e:
                     logger.error(e)
                     threadIdxToBePoped.remove(idx)
