@@ -3,7 +3,7 @@ version: '3'
 services:
   web:
     image: cooco119/image-server-practice:web_latest
-    command: python3 manage.py test
+    command: python3 manage.py test --noinput 
     container_name: image-server-practice_web_test
     ports:
       - "15161:8000"
