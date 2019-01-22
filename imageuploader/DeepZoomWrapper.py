@@ -68,7 +68,7 @@ class DeepZoomWrapper(object):
                                  os.path.splitext(objectName)[0],
                                  objectName)
 
-        logger.debug("Trying to get \
+        logger.info("Trying to get \
 image data from minio server")
         imageData = None
         imageFormat = ""
@@ -87,7 +87,7 @@ image data from minio server")
                 exists = True
         try:
 
-            logger.debug("Image get successful.")
+            logger.info("Image get successful.")
             # logger.debug("Start writing image file..")
 
             # with open(imagePath, 'wb+') as file_data:
@@ -126,7 +126,7 @@ image data from minio server")
 
         logger.debug("Source path: " + imagePath)
         logger.debug("Result path: " + res_path)
-        logger.debug("Entering deepzoom api")
+        logger.info("Entering deepzoom api")
         creator.create(imagePath, res_path, logger)
 
         return res_path
@@ -219,7 +219,7 @@ image data from minio server")
                 )
                 file_data.close()
 
-            logger.debug(
+            logger.info(
                 "Starting upload \
 recursively to minio server, starting from " +
                 dataDirPath)
@@ -232,28 +232,28 @@ recursively to minio server, starting from " +
                 os.path.split(dataDirPath)[1],
                 os.path.splitext(imageName)[0]
                 )
-            logger.debug("Successfully sent to minio server")
+            logger.info("Successfully sent to minio server")
 
-            logger.debug("Copying files to frontend/public/")
+            logger.info("Copying files to frontend/public/")
             try:
                 dir_util.copy_tree(
                     os.path.split(dataDirPath)[0],
                     '/code/frontend_app/deepzoom/' + bucketName)
-                logger.debug("[DeepZeeomWrapper] Successfully copied files")
+                logger.info("[DeepZeeomWrapper] Successfully copied files")
 
             except Exception as e:
-                logger.debug("Error occured copying files: ")
-                logger.debug("" + str(e))
+                logger.error("Error occured copying files: ")
+                logger.error("" + str(e))
 
-            logger.debug("Deleting temporary files")
+            logger.info("Deleting temporary files")
             shutil.rmtree(os.path.split(dataDirPath)[0])
             shutil.rmtree('/code/imageuploader/image_tmp/source/' +
                           os.path.splitext(imageName)[0]
                           )
-            logger.debug("Successfully \
+            logger.info("Successfully \
 deleted temporary files")
 
-            logger.debug("Start update db")
+            logger.info("Start update db")
 
             try:
                 if (oid.objects.all().filter(bucket_name=bucketName)
@@ -289,14 +289,14 @@ Deleting original image from db")
                         logger.debug("\
 Deleting original image from minio")
                         minioClient.remove_object(bucketName, image.image_name)
-                        logger.debug("\
+                        logger.info("\
 Successfully deleted unprocessed image")
 
             except Exception as e:
                 logger.error("[Exception] at DeepZoomWrapper:183 " + e)
                 logger.error("Object exists?")
 
-            logger.debug("Succesfully updated db")
+            logger.info("Succesfully updated db")
 
         except ResponseError as err:
             logger.error("[ResponseError] at DeepZoomWrapper:190 " + err)
@@ -349,7 +349,7 @@ Successfully deleted unprocessed image")
 
         try:
             start = datetime.datetime.now()
-            logger.debug('Started at: ' +
+            logger.info('Started at: ' +
                          time.strftime("%H-%M-%S"))
             bucketName = image.image_oid.bucket_name
             objectName = image.image_name
