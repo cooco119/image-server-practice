@@ -15,7 +15,7 @@ import time
 import logging
 import shutil
 import openslide
-import distutils
+from distutils import dir_util
 
 
 # Singleton class #
@@ -236,7 +236,7 @@ recursively to minio server, starting from " +
 
             logger.debug("Copying files to frontend/public/")
             try:
-                distutils.dir_util.copy_tree(
+                dir_util.copy_tree(
                     os.path.split(dataDirPath)[0],
                     '/code/frontend_app/deepzoom/' + bucketName)
                 logger.debug("[DeepZeeomWrapper] Successfully copied files")
@@ -328,7 +328,7 @@ Successfully deleted unprocessed image")
                     file_data.close()
 
             except Exception as e:
-                logger.debug(e)
+                logger.error(e)
 
         elif os.path.isdir(path):
             for content in os.listdir(path):
