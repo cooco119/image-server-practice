@@ -51,6 +51,7 @@ def setQueueAndStart():
                 m_thread = Thread(target=fetch,
                                   name=m_bucket.name,
                                   args=(m_bucket, ))
+                logger.info("Start pulling " + m_bucket.name)
                 m_thread.start()
                 threadList.append(m_thread)
                 numThreads += 1
