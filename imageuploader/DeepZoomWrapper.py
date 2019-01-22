@@ -15,6 +15,7 @@ import time
 import logging
 import shutil
 import openslide
+from openslide import deepzoom
 from distutils import dir_util
 
 
