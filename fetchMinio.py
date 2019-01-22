@@ -73,13 +73,14 @@ def setQueueAndStart():
                 print("Successfully pulled " + finishedBucketName)
                 numThreads -= 1
 
-        for idx in threadIdxToBePoped.sort(reverse=True):
-            try:
-                threadList.pop(idx)
-            except Exception as e:
-                logger.error(e)
-                threadIdxToBePoped.remove(idx)
-        threadIdxToBePoped = []
+        if threadIdxToBePoped:
+            for idx in threadIdxToBePoped.sort(reverse=True):
+                try:
+                    threadList.pop(idx)
+                except Exception as e:
+                    logger.error(e)
+                    threadIdxToBePoped.remove(idx)
+            threadIdxToBePoped = []
 
         if len(threadList) == 0:
             return
