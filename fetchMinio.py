@@ -75,7 +75,8 @@ def setQueueAndStart():
                 numThreads -= 1
 
         if threadIdxToBePoped:
-            for idx in threadIdxToBePoped.sort(reverse=True):
+            threadIdxToBePoped.sort(reverse=True)
+            for idx in threadIdxToBePoped:
                 try:
                     threadList.pop(idx)
                 except Exception as e:
