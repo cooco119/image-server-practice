@@ -160,6 +160,11 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
+        'console_err': {
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
         'logfile': {
             'level': 'NOTSET',
             'class': 'logging.FileHandler',
@@ -169,21 +174,21 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'logfile'],
+            'handlers': ['console', 'logfile', 'console_err'],
             'level': 'NOTSET',
         },
         'django.request': {
-            'handlers': ['console', 'logfile'],
+            'handlers': ['console', 'logfile', 'console_err'],
             'propagate': True,
             'level': 'NOTSET'
         },
         'django.server': {
-            'handlers': ['console', 'logfile'],
+            'handlers': ['console', 'logfile', 'console_err'],
             'propagate': True,
             'level': 'NOTSET'
         },
         'django.db.backends': {
-            'handlers': ['console', 'logfile'],
+            'handlers': ['console', 'logfile', 'console_err'],
             'propagate': True,
             'level': 'NOTSET'
         },

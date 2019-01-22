@@ -16,6 +16,7 @@ import logging
 import shutil
 import openslide
 from openslide import deepzoom
+from distutils import dir_util
 
 
 # Singleton class #
@@ -68,7 +69,7 @@ class DeepZoomWrapper(object):
                                  os.path.splitext(objectName)[0],
                                  objectName)
 
-        logger.debug("Trying to get \
+        logger.info("Trying to get \
 image data from minio server")
         imageData = None
         imageFormat = ""
@@ -87,7 +88,7 @@ image data from minio server")
                 exists = True
         try:
 
-            logger.debug("Image get successful.")
+            logger.info("Image get successful.")
             # logger.debug("Start writing image file..")
 
             # with open(imagePath, 'wb+') as file_data:
@@ -126,7 +127,7 @@ image data from minio server")
 
         logger.debug("Source path: " + imagePath)
         logger.debug("Result path: " + res_path)
-        logger.debug("Entering deepzoom api")
+        # logger.info("Entering deepzoom api")
         creator.create(imagePath, res_path, logger)
 
         return res_path
@@ -156,7 +157,7 @@ image data from minio server")
                                      os.path.splitext(filename)[0] + "_files")
 
         slide = openslide.OpenSlide(imagePath)
-        dzi = deepzoom.DeepZoomGenerator(slide, limit_bounds=True)
+        dzi = openslide.deepzoom.DeepZoomGenerator(slide, limit_bounds=True)
 
         if not os.path.exists(tile_dir_path):
             os.makedirs(tile_dir_path)
@@ -219,7 +220,7 @@ image data from minio server")
                 )
                 file_data.close()
 
-            logger.debug(
+            logger.info(
                 "Starting upload \
 recursively to minio server, starting from " +
                 dataDirPath)
@@ -232,29 +233,28 @@ recursively to minio server, starting from " +
                 os.path.split(dataDirPath)[1],
                 os.path.splitext(imageName)[0]
                 )
-            logger.debug("Successfully sent to minio server")
+            logger.info("Successfully sent to minio server")
 
-            logger.debug("Copying files to frontend/public/")
+            logger.info("Copying files to frontend/public/")
             try:
-                shutil.copytree(
+                dir_util.copy_tree(
                     os.path.split(dataDirPath)[0],
                     '/code/frontend_app/deepzoom/' + bucketName)
-                logger.debug("[DeepZeeomWrapper] Successfully copied files")
+                logger.info("[DeepZeeomWrapper] Successfully copied files")
 
             except Exception as e:
-                logger.debug("Error occured copying files: ")
-                logger.debug("" + str(e))
-                self.__imageQueue.pop()
+                logger.error("Error occured copying files: ")
+                logger.error("" + str(e))
 
-            logger.debug("Deleting temporary files")
+            logger.info("Deleting temporary files")
             shutil.rmtree(os.path.split(dataDirPath)[0])
             shutil.rmtree('/code/imageuploader/image_tmp/source/' +
                           os.path.splitext(imageName)[0]
                           )
-            logger.debug("Successfully \
+            logger.info("Successfully \
 deleted temporary files")
 
-            logger.debug("Start update db")
+            logger.info("Start update db")
 
             try:
                 if (oid.objects.all().filter(bucket_name=bucketName)
@@ -290,19 +290,17 @@ Deleting original image from db")
                         logger.debug("\
 Deleting original image from minio")
                         minioClient.remove_object(bucketName, image.image_name)
-                        logger.debug("\
+                        logger.info("\
 Successfully deleted unprocessed image")
 
             except Exception as e:
                 logger.error("[Exception] at DeepZoomWrapper:183 " + e)
                 logger.error("Object exists?")
-                self.__imageQueue.pop()
 
-            logger.debug("Succesfully updated db")
+            logger.info("Succesfully updated db")
 
         except ResponseError as err:
             logger.error("[ResponseError] at DeepZoomWrapper:190 " + err)
-            self.__imageQueue.pop()
 
         return
 
@@ -331,8 +329,7 @@ Successfully deleted unprocessed image")
                     file_data.close()
 
             except Exception as e:
-                self.__imageQueue.pop()
-                logger.debug(e)
+                logger.error(e)
 
         elif os.path.isdir(path):
             for content in os.listdir(path):
@@ -351,10 +348,9 @@ Successfully deleted unprocessed image")
 
     def handleImage(self, image, logger):
 
-    
         try:
-            start = datetime.datetime.time()
-            logger.debug('Started at: ' +
+            start = datetime.datetime.now()
+            logger.info('Started at: ' +
                          time.strftime("%H-%M-%S"))
             bucketName = image.image_oid.bucket_name
             objectName = image.image_name
@@ -368,20 +364,21 @@ Successfully deleted unprocessed image")
 
             logger.debug("Entering imageTiler at: " +
                          time.strftime("%H-%M-%S"))
+            logger.info("Start tiling the image")
 
             if (os.path.splitext(imagePath)[1].lower() 
-                    in ["jpeg", "jpg", "png"]):
+                    in [".jpeg", ".jpg", ".png"]):
                 imagePath_processed = self.imageTilerDeepZoom(imagePath,
                                                               logger)
 
             elif (os.path.splitext(imagePath)[1].lower()
-                    in ["svs", ".tif", "tiff"]):
+                    in [".svs", ".tif", ".tiff"]):
                 imagePath_processed = self.imageTilerOpenSlide(imagePath,
                                                                logger)
 
             self.updateImage(image, imagePath_processed, logger)
             logger.info("Processing image finished.")
-            elapsed = datetime.datetime.time() - start
+            elapsed = datetime.datetime.now() - start
             ms = elapsed / datetime.timedelta(milliseconds=1)
             logger.info("Processing took " + str(ms) + " ms.")
 
