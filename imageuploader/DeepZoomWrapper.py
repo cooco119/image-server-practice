@@ -351,9 +351,8 @@ Successfully deleted unprocessed image")
 
     def handleImage(self, image, logger):
 
-    
         try:
-            start = datetime.datetime.time()
+            start = datetime.datetime.now()
             logger.debug('Started at: ' +
                          time.strftime("%H-%M-%S"))
             bucketName = image.image_oid.bucket_name
@@ -381,7 +380,7 @@ Successfully deleted unprocessed image")
 
             self.updateImage(image, imagePath_processed, logger)
             logger.info("Processing image finished.")
-            elapsed = datetime.datetime.time() - start
+            elapsed = datetime.datetime.now() - start
             ms = elapsed / datetime.timedelta(milliseconds=1)
             logger.info("Processing took " + str(ms) + " ms.")
 
