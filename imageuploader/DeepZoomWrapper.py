@@ -350,35 +350,48 @@ Successfully deleted unprocessed image")
 
     def handleImage(self, image, logger):
 
-        start = time.time()
-        logger.debug('Started at: ' +
-                     time.strftime("%H-%M-%S"))
-        bucketName = image.image_oid.bucket_name
-        objectName = image.image_name
-        logger.debug("bucketName: " +
-                     bucketName + ", objectName: " + objectName)
+        try:
+            start = datetime.datetime.time()
+            logger.debug('Started at: ' +
+                         time.strftime("%H-%M-%S"))
+            bucketName = image.image_oid.bucket_name
+            objectName = image.image_name
+            logger.debug("bucketName: " +
+                         bucketName + ", objectName: " + objectName)
 
-        logger.debug("Entering imageFetcher at: " +
-                     time.strftime("%H-%M-%S"))
-        imagePath = self.imageFetcher(bucketName, objectName, logger)
-        logger.debug("Fetched image path: " + imagePath)
+            logger.debug("Entering imageFetcher at: " +
+                         time.strftime("%H-%M-%S"))
+            imagePath = self.imageFetcher(bucketName, objectName, logger)
+            logger.debug("Fetched image path: " + imagePath)
 
-        logger.debug("Entering imageTiler at: " +
-                     time.strftime("%H-%M-%S"))
+            logger.debug("Entering imageTiler at: " +
+                         time.strftime("%H-%M-%S"))
 
-        if (os.path.splitext(imagePath)[1].lower() in ["jpeg", "jpg", "png"]):
-            imagePath_processed = self.imageTilerDeepZoom(imagePath, logger)
+            if (os.path.splitext(imagePath)[1].lower() 
+                    in ["jpeg", "jpg", "png"]):
+                imagePath_processed = self.imageTilerDeepZoom(imagePath,
+                                                              logger)
 
-        elif (os.path.splitext(imagePath)[1].lower()
-              in ["svs", ".tif", "tiff"]):
-            imagePath_processed = self.imageTilerOpenSlide(imagePath, logger)
+            elif (os.path.splitext(imagePath)[1].lower()
+                    in ["svs", ".tif", "tiff"]):
+                imagePath_processed = self.imageTilerOpenSlide(imagePath,
+                                                               logger)
 
-        logger.info("Processing image finished.")
-        elapsed = time.time() - start
+            self.updateImage(image, imagePath_processed, logger)
+            logger.info("Processing image finished.")
+            elapsed = datetime.datetime.time() - start
+            ms = elapsed / datetime.timedelta(milliseconds=1)
+            logger.info("Processing took " + str(ms) + " ms.")
 
-        self.__imageQueue.pop()
+            self.__imageQueue.pop()
+            return
 
-        return self.updateImage(image, imagePath_processed, logger)
+        except Exception as e:
+            self.__imageQueue.pop()
+            logger.error("Exception occured handling image.")
+            logger.error(e)
+
+        return
 
     def process(self):
 
@@ -388,12 +401,6 @@ Successfully deleted unprocessed image")
 
             # attatch logging module
             logger = logging.getLogger(name=image.image_name)
-            # logger.setLevel(logging.DEBUG)
-            # ch = logging.StreamHandler()
-            # ch.setLevel(logging.DEBUG)
-            # formatter = logging.Formatter('%(message)s')
-            # ch.setFormatter(formatter)
-            # logger.addHandler(ch)
 
             # creating thread
             logger.debug("Creating thread..")
