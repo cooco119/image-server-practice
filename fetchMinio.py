@@ -39,22 +39,29 @@ def setQueueAndStart():
     buckets = minioClient.list_buckets()
     for bucket in buckets:
         queue.put(bucket)
+    print("Start pulling from minio")
 
     numThreads = 0
     MAX_THREAD_NUMBER = 4
     threadList = []
     threadIdxToBePoped = []
+    threadStr = ""
+    for i in range(len(threadList)):
+        threadStr += threadList[i].name + " "
+    print('Thread List: ' + threadStr)
     while True:
-        if numThreads < MAX_THREAD_NUMBER and not queue.empty():
-            for i in range(MAX_THREAD_NUMBER - numThreads - 1):
+        if numThreads <= MAX_THREAD_NUMBER and not queue.empty():
+            for i in range(MAX_THREAD_NUMBER - numThreads):
                 m_bucket = queue.get()
                 m_thread = Thread(target=fetch,
                                   name=m_bucket.name,
                                   args=(m_bucket, ))
                 m_thread.start()
                 threadList.append(m_thread)
+                writeStatus(threadList)
+                print("Start pulling " + m_bucket.name)
                 numThreads += 1
-
+            
         for i in range(len(threadList)):
             thread = threadList[i]
             try:
@@ -66,16 +73,26 @@ def setQueueAndStart():
                 finishedBucketName = thread.name
                 print("Successfully pulled " + finishedBucketName)
                 numThreads -= 1
-        try:
+
+        if threadIdxToBePoped:
+            threadIdxToBePoped.sort(reverse=True)
             for idx in threadIdxToBePoped:
-                threadList.pop(idx)
+                try:
+                    threadList.pop(idx)
+                    writeStatus(threadList)
+                except Exception as e:
+                    logger.error(e)
+                    threadIdxToBePoped.remove(idx)
             threadIdxToBePoped = []
-        except Exception as e:
-            logger.Error(e)
 
         if len(threadList) == 0:
             return
 
 
+def writeStatus(threadList):
+    threadStr = ""
+    for i in range(len(threadList)):
+        threadStr += threadList[i].name + " "
+    print('Thread List: ' + threadStr)
 if __name__ == "__main__":
     setQueueAndStart()

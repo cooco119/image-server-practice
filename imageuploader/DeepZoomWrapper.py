@@ -15,6 +15,8 @@ import time
 import logging
 import shutil
 import openslide
+from openslide import deepzoom
+from distutils import dir_util
 
 
 # Singleton class #
@@ -67,7 +69,7 @@ class DeepZoomWrapper(object):
                                  os.path.splitext(objectName)[0],
                                  objectName)
 
-        logger.debug("Trying to get \
+        logger.info("Trying to get \
 image data from minio server")
         imageData = None
         imageFormat = ""
@@ -76,7 +78,7 @@ image data from minio server")
         while not exists:
             try:
                 logger.debug("Trying to connect..")
-                data = minioClient.get_object(bucketName, objectName)
+                data = minioClient.fget_object(bucketName, objectName, imagePath)
 
             except:
                 time.sleep(0.5)
@@ -86,22 +88,22 @@ image data from minio server")
                 exists = True
         try:
 
-            logger.debug("Image get successful.")
-            logger.debug("Start writing image file..")
+            logger.info("Image get successful.")
+            # logger.debug("Start writing image file..")
 
-            with open(imagePath, 'wb+') as file_data:
-                for d in data.stream(32*1024):
-                    if imageData is None:
-                        imageData = d.split(','.encode('utf-8'))[1]
-                    else:
-                        imageData += d
+            # with open(imagePath, 'wb+') as file_data:
+            #     for d in data.stream(32*1024):
+            #         if imageData is None:
+            #             imageData = d.split(','.encode('utf-8'))[1]
+            #         else:
+            #             imageData += d
 
-                imageFileData = base64.b64decode(imageData)
-                file_data.write(imageFileData)
-                file_data.close()
-                logger.debug("Successfully wrote image file")
+            #     imageFileData = base64.b64decode(imageData)
+            #     file_data.write(imageFileData)
+            #     file_data.close()
+            #     logger.debug("Successfully wrote image file")
 
-                return imagePath
+            return imagePath
 
         except ResponseError as err:
             logger.error(err)
@@ -125,7 +127,7 @@ image data from minio server")
 
         logger.debug("Source path: " + imagePath)
         logger.debug("Result path: " + res_path)
-        logger.debug("Entering deepzoom api")
+        # logger.info("Entering deepzoom api")
         creator.create(imagePath, res_path, logger)
 
         return res_path
@@ -162,7 +164,7 @@ image data from minio server")
 
         # saving .dzi
         with open(res_path, 'w') as dzi_file:
-            dzi_file.write(dzi.get_dzi())
+            dzi_file.write(dzi.get_dzi("png"))
             dzi_file.close()
 
         # saving tiles
@@ -218,7 +220,7 @@ image data from minio server")
                 )
                 file_data.close()
 
-            logger.debug(
+            logger.info(
                 "Starting upload \
 recursively to minio server, starting from " +
                 dataDirPath)
@@ -231,29 +233,28 @@ recursively to minio server, starting from " +
                 os.path.split(dataDirPath)[1],
                 os.path.splitext(imageName)[0]
                 )
-            logger.debug("Successfully sent to minio server")
+            logger.info("Successfully sent to minio server")
 
-            logger.debug("Copying files to frontend/public/")
+            logger.info("Copying files to frontend/public/")
             try:
-                shutil.copytree(
+                dir_util.copy_tree(
                     os.path.split(dataDirPath)[0],
                     '/code/frontend_app/deepzoom/' + bucketName)
-                logger.debug("[DeepZeeomWrapper] Successfully copied files")
+                logger.info("[DeepZeeomWrapper] Successfully copied files")
 
             except Exception as e:
-                logger.debug("Error occured copying files: ")
-                logger.debug("" + e)
-                self.__imageQueue.pop()
+                logger.error("Error occured copying files: ")
+                logger.error("" + str(e))
 
-            logger.debug("Deleting temporary files")
+            logger.info("Deleting temporary files")
             shutil.rmtree(os.path.split(dataDirPath)[0])
             shutil.rmtree('/code/imageuploader/image_tmp/source/' +
                           os.path.splitext(imageName)[0]
                           )
-            logger.debug("Successfully \
+            logger.info("Successfully \
 deleted temporary files")
 
-            logger.debug("Start update db")
+            logger.info("Start update db")
 
             try:
                 if (oid.objects.all().filter(bucket_name=bucketName)
@@ -289,19 +290,17 @@ Deleting original image from db")
                         logger.debug("\
 Deleting original image from minio")
                         minioClient.remove_object(bucketName, image.image_name)
-                        logger.debug("\
+                        logger.info("\
 Successfully deleted unprocessed image")
 
             except Exception as e:
                 logger.error("[Exception] at DeepZoomWrapper:183 " + e)
                 logger.error("Object exists?")
-                self.__imageQueue.pop()
 
-            logger.debug("Succesfully updated db")
+            logger.info("Succesfully updated db")
 
         except ResponseError as err:
             logger.error("[ResponseError] at DeepZoomWrapper:190 " + err)
-            self.__imageQueue.pop()
 
         return
 
@@ -330,8 +329,7 @@ Successfully deleted unprocessed image")
                     file_data.close()
 
             except Exception as e:
-                self.__imageQueue.pop()
-                logger.debug(e)
+                logger.error(e)
 
         elif os.path.isdir(path):
             for content in os.listdir(path):
@@ -350,35 +348,49 @@ Successfully deleted unprocessed image")
 
     def handleImage(self, image, logger):
 
-        start = time.time()
-        logger.debug('Started at: ' +
-                     time.strftime("%H-%M-%S"))
-        bucketName = image.image_oid.bucket_name
-        objectName = image.image_name
-        logger.debug("bucketName: " +
-                     bucketName + ", objectName: " + objectName)
+        try:
+            start = datetime.datetime.now()
+            logger.info('Started at: ' +
+                         time.strftime("%H-%M-%S"))
+            bucketName = image.image_oid.bucket_name
+            objectName = image.image_name
+            logger.debug("bucketName: " +
+                         bucketName + ", objectName: " + objectName)
 
-        logger.debug("Entering imageFetcher at: " +
-                     time.strftime("%H-%M-%S"))
-        imagePath = self.imageFetcher(bucketName, objectName, logger)
-        logger.debug("Fetched image path: " + imagePath)
+            logger.debug("Entering imageFetcher at: " +
+                         time.strftime("%H-%M-%S"))
+            imagePath = self.imageFetcher(bucketName, objectName, logger)
+            logger.debug("Fetched image path: " + imagePath)
 
-        logger.debug("Entering imageTiler at: " +
-                     time.strftime("%H-%M-%S"))
+            logger.debug("Entering imageTiler at: " +
+                         time.strftime("%H-%M-%S"))
+            logger.info("Start tiling the image")
 
-        if (os.path.splitext(imagePath)[1].lower() in ["jpeg", "jpg", "png"]):
-            imagePath_processed = self.imageTilerDeepZoom(imagePath, logger)
+            if (os.path.splitext(imagePath)[1].lower() 
+                    in [".jpeg", ".jpg", ".png"]):
+                imagePath_processed = self.imageTilerDeepZoom(imagePath,
+                                                              logger)
 
-        elif (os.path.splitext(imagePath)[1].lower()
-              in ["svs", ".tif", "tiff"]):
-            imagePath_processed = self.imageTilerOpenSlide(imagePath, logger)
+            elif (os.path.splitext(imagePath)[1].lower()
+                    in [".svs", ".tif", ".tiff"]):
+                imagePath_processed = self.imageTilerOpenSlide(imagePath,
+                                                               logger)
 
-        logger.info("Processing image finished.")
-        elapsed = time.time() - start
+            self.updateImage(image, imagePath_processed, logger)
+            logger.info("Processing image finished.")
+            elapsed = datetime.datetime.now() - start
+            ms = elapsed / datetime.timedelta(milliseconds=1)
+            logger.info("Processing took " + str(ms) + " ms.")
 
-        self.__imageQueue.pop()
+            self.__imageQueue.pop()
+            return
 
-        return self.updateImage(image, imagePath_processed, logger)
+        except Exception as e:
+            self.__imageQueue.pop()
+            logger.error("Exception occured handling image.")
+            logger.error(e)
+
+        return
 
     def process(self):
 
@@ -388,12 +400,6 @@ Successfully deleted unprocessed image")
 
             # attatch logging module
             logger = logging.getLogger(name=image.image_name)
-            # logger.setLevel(logging.DEBUG)
-            # ch = logging.StreamHandler()
-            # ch.setLevel(logging.DEBUG)
-            # formatter = logging.Formatter('%(message)s')
-            # ch.setFormatter(formatter)
-            # logger.addHandler(ch)
 
             # creating thread
             logger.debug("Creating thread..")
