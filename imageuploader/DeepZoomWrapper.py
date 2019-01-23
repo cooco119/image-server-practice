@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from . import deepzoom
+from . import deepzoom as deepzoomJPG
 from threading import Thread
 from models.models import oid, Image, Users
 import requests
@@ -110,7 +110,7 @@ image data from minio server")
 
     def imageTilerDeepZoom(self, imagePath, logger):
 
-        creator = deepzoom.ImageCreator(tile_size=128,
+        creator = deepzoomJPG.ImageCreator(tile_size=128,
                                         tile_overlap=2,
                                         tile_format="png",
                                         image_quality=0.8,
