@@ -1,3 +1,0 @@
-[submodule "slack-logger"]
-	path = slack-logger
-	url = https://github.com/cooco119/slack-logger
